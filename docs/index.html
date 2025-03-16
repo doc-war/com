@@ -1,71 +1,149 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="zh">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>文档战场</title>
-  <link rel="icon" href="favicon.ico" type="image/x-icon">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DocWar</title>
+    <style>
+        body {
+            background: #f6f6f6;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-start;
+            background-size: 100% 100%;
+            margin: 0;
+            padding: 0;
+            background-image: url(./background.png);
+        }
 
-    body {
-      display: flex;
-      justify-content: flex-start;  
-      align-items: center;  
-      height: 100vh;  
-      font-family: Arial, sans-serif;  
-      background-color: #f0f0f0;  
-      padding-left: 20%;  
-    }
-    .container {
-      text-align: left;  
-      line-height: 1.5;
-    }
+        .container {
+            height: 80vh;
+            min-height: 80vh;
+            max-height: 80vh;
+            width: 80vw;
+            padding: 10vh 10vw;
+        }
 
-    /* .github-icon {
-      font-size: 24px;  
-      color: #333; 
-      margin-left: 5px;
-      text-decoration: none;  
-    } */
+        .slogan {
+            margin-top: 50vh;
+            height:150px;
+        }
 
-    .logo-container {
-      display: flex;
-      align-items: center;
-      border-bottom: 1px solid transparent;
-      width: 100%;
-      height: var(--vp-nav-height);
-      font-size: 18px;
-      font-weight: 500;
-      color: var(--vp-c-text-1);
-      transition: opacity .25s;
-    }
-    .slogan{
-      color:#2288ff;
-    }
+        .at {
+            font-size: 24px;
+            color: #bbbbbb;
+            cursor: pointer;
+        }
 
-    /* Mobile responsiveness */
-    @media (max-width: 768px) {
-      body {
-        padding-left: 15px;  /* Slightly smaller left padding on mobile */
-      }
+        .first, .second {
+            font-size: 26px;
+            color: #9f9f9f;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
+        }
 
-      .container {
-        padding-left: 10px;  /* Add some space for small screens */
-      }
-    }
-  </style>
+        .second {
+            font-size: 30px;
+            color: #888888;
+        }
+
+        .hidden {
+            opacity: 0;
+        }
+
+        /* 音乐图标样式 */
+        .music {
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            transition: transform 0.3s ease-in-out;
+        }
+
+        /* 旋转动画 */
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+
+        /* 播放时的旋转效果 */
+        .spinning {
+            animation: spin 2s linear infinite;
+        }
+    </style>
 </head>
 <body>
-  <div class="container">
-    <div class="logo-container">
-      <div>文档驱动※※</div>
+    <div class="container">
+        <div class="slogan">
+          <div id="at" class="at">@doc-war</div>
+          <div id="first" class="first">文档驱动学习、创新</div>
+          <div id="second" class="second"></div>
+        </div>
+        <img id="music" class="music" src="music.png" onclick="switchMusic()">
     </div>
-    <div><span class="slogan" title="zhao@mandaren.com">@越石父：</span>技术，万工之王；创新，万般之上。</div>
-  </div>
+    
+    <!-- 仅用于用于播放音频，不显示图标，浏览器不支持就拉倒 -->
+    <video id="bgMusic" loop autoplay style="display: none;">
+        <source src="./sound/wave.mp4" type="video/mp4">
+    </video>
+
+    <script>
+        let texts = [
+            { at: "@doc-war", first: "文档驱动学习、创新", second: "" },
+            { at: "@越石父", first: "不知 其 然", second: "先知 其 所 以 然" },
+            { at: "@青樵", first: "技术，千工之王", second: "创造，万般之上" }
+        ];
+        let index = 0;
+        function switchText() {
+            let at = document.getElementById("at");
+            let first = document.getElementById("first");
+            let second = document.getElementById("second");
+
+            first.classList.add("hidden");
+            second.classList.add("hidden");
+
+            setTimeout(() => {
+                index = (index + 1) % texts.length;
+                at.innerText = texts[index].at;
+                first.innerText = texts[index].first;
+                second.innerText = texts[index].second;
+
+                first.classList.remove("hidden");
+                second.classList.remove("hidden");
+            }, 1000);
+        }
+
+        setInterval(switchText, 4000);   //切换slogan
+        setTimeout(switchMusic, 500);   //延迟触发背景音，避免未渲染就执行
+
+        // 控制音乐播放
+        let musicIcon = document.getElementById("music");
+        let bgMusic = document.getElementById("bgMusic");
+        let isPlaying = true;
+        function switchMusic() {
+            if (isPlaying) {
+                bgMusic.pause();
+                musicIcon.classList.remove("spinning"); // 停止旋转
+            } else {
+                bgMusic.play().then(() => {
+                    musicIcon.classList.add("spinning"); // 开始旋转
+                }).catch(error => {
+                    console.error("播放失败:", error); // 处理播放失败的情况
+                });
+            }
+            isPlaying = !isPlaying;
+        }
+
+        // 浏览器有用户策略，需要确保自动播放操作是由用户交互触发的
+        document.addEventListener("click", function () {
+            if (bgMusic.paused) {
+                bgMusic.play().then(() => {
+                    musicIcon.classList.add("spinning"); // 开始旋转
+                    console.log("用户交互后播放音乐");
+                }).catch(error => {
+                    console.error("播放失败:", error);
+                });
+            }
+        }, { once: true });
+    </script>
 </body>
 </html>
