@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>文档战场</title>
+  <link rel="icon" href="favicon.ico" type="image/x-icon">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      display: flex;
+      justify-content: flex-start;  
+      align-items: center;  
+      height: 100vh;  
+      font-family: Arial, sans-serif;  
+      background-color: #f0f0f0;  
+      padding-left: 20%;  
+    }
+    .container {
+      text-align: left;  
+      line-height: 1.5;
+    }
+
+    /* .github-icon {
+      font-size: 24px;  
+      color: #333; 
+      margin-left: 5px;
+      text-decoration: none;  
+    } */
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      border-bottom: 1px solid transparent;
+      width: 100%;
+      height: var(--vp-nav-height);
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--vp-c-text-1);
+      transition: opacity .25s;
+    }
+    .slogan{
+      color:#2288ff;
+    }
+
+    /* Mobile responsiveness */
+    @media (max-width: 768px) {
+      body {
+        padding-left: 15px;  /* Slightly smaller left padding on mobile */
+      }
+
+      .container {
+        padding-left: 10px;  /* Add some space for small screens */
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo-container">
+      <div>文档驱动※※</div>
+    </div>
+    <div><span class="slogan" title="zhao@mandaren.com">@越石父：</span>技术，万工之王；创新，万般之上。</div>
+  </div>
+</body>
+</html>
