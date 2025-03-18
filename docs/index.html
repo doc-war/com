@@ -3,6 +3,25 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- Google整站分析 -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-35NVTJRXGL"></script>
+    <script>
+        window.dataLayer = window.dataLayer || [];
+        function gtag(){dataLayer.push(arguments);}
+        gtag('js', new Date());
+        gtag('config', 'G-35NVTJRXGL');
+    </script>
+    <!-- 百度整站统计 -->
+    <script>
+        var _hmt = _hmt || [];
+        (function() {
+          var hm = document.createElement("script");
+          hm.src = "https://hm.baidu.com/hm.js?795b4ac94c7ceb06937c0c4880eb0f0d";
+          var s = document.getElementsByTagName("script")[0]; 
+          s.parentNode.insertBefore(hm, s);
+        })();
+    </script>
+        
     <title>DocWar</title>
     <style>
         body {
@@ -112,12 +131,12 @@
             }, 1000);
         }
 
-        setInterval(switchText, 4000);   //切换slogan
+        setInterval(switchText, 5000);   //切换slogan
         setTimeout(switchMusic, 500);   //延迟触发背景音，避免未渲染就执行
 
         // 控制音乐播放
         let musicIcon = document.getElementById("music");
-        let bgMusic = document.getElementById("bgMusic");
+        // let bgMusic = document.getElementById("bgMusic");
         let isPlaying = true;
         function switchMusic() {
             if (isPlaying) {
