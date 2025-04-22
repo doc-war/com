@@ -34,7 +34,7 @@
             padding: 0;
             background-image: url(./background.png);
         }
-
+        
         .container {
             height: 80vh;
             min-height: 80vh;
@@ -45,35 +45,48 @@
 
         .slogan {
             margin-top: 50vh;
-            height:150px;
+            height:160px;
         }
 
         .at {
             font-size: 24px;
-            color: #bbbbbb;
+            color: #ba9;
             cursor: pointer;
         }
 
-        .first, .second {
+        .first{
             font-size: 26px;
-            color: #9f9f9f;
+            color: #666;
             opacity: 1;
             transition: opacity 1s ease-in-out;
         }
-
         .second {
             font-size: 30px;
-            color: #888888;
+            color: #333;
+            opacity: 1;
+            transition: opacity 1s ease-in-out;
         }
 
         .hidden {
             opacity: 0;
         }
+        .icons{
+            display: flex;
+            align-items: space-between; /* 垂直居中 */
+            justify-content: space-between;
+            gap: 8px; /* 元素之间的间距，可选 */
+            width: 80vw;
+        }
+        .icon{
+            width: 30px;
+            height: 30px;
+        }
+        .judgment{
+            opacity: 0.2;
+        }
 
         /* 音乐图标样式 */
         .music {
-            width: 30px;
-            height: 30px;
             cursor: pointer;
             transition: transform 0.3s ease-in-out;
         }
@@ -97,7 +110,15 @@
           <div id="first" class="first">文档驱动学习、创新</div>
           <div id="second" class="second"></div>
         </div>
-        <img id="music" class="music" src="music.png" onclick="switchMusic()">
+        <div class="icons">
+            <div>
+            <img id="music" class="music icon" src="music.png" onclick="switchMusic()">
+            <a href="https://orcid.org/0009-0004-5950-4104"><img class="icon" src="orcid.svg"></a>
+            <img  class="icon" src="logo.png">
+            </div>
+            <!-- <span class="judgment">©专注协议研发，贡献判断力价值</span> -->
+        </div>
+        <div class="judgment">©专注协议研发，贡献判断力价值</div>
     </div>
     
     <!-- 仅用于用于播放音频，不显示图标，浏览器不支持就拉倒 -->
