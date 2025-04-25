@@ -81,12 +81,56 @@
     }
   </style>
   <style>
+    .language-menu {
+      display: inline-block;
+      position: relative;
+      font-size: 14px;
+    }
+    .current-language {
+      cursor: pointer;
+      user-select: none;
+    }
+    .language-popup {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--color-text);
+      color:var(--color-bg);
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      z-index: 100;
+    }
+    .language-line{
+      margin:10px;
+    }
+    .language-popup a {
+      display: block;
+      color: #000;
+      text-decoration: none;
+      margin: 2px 0;
+    }
+    .language-popup a:hover {
+      text-decoration: underline;
+    } 
+  </style>
+  <style>
     .logo {
       border: 3px solid #fff;
       border-radius: 150px;
       padding: 4px;
       width: 150px;
       height: 150px
+    }
+    .line{
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .icon{
+      width: 28px;
+      height: 28px;
     }
     .red{
       color:red;
@@ -134,32 +178,39 @@
 <body>
   <div id="app">
     <div class="topnav">
-      <div  class="language-menu">
-        <div  class="current-language">
-          简体中文
+      <div class="language-menu">
+        <div class="current-language">简体中文 ▾</div>
+        <div class="language-popup" style="display: none;">
+          <div class="language-line"><a href="/docs/contextmarklanguage">English</a></div>
+          <!-- 如果当前是中文页面，也可反向加一行跳英文 -->
+          <div class="language-line">简体中文 <span style="color:#999;">(当前)</span></div>
         </div>
-        <ul  class="other-languages" style="display: none;">
-          <li>English</li>
-        </ul>
       </div>
-      <div  class="github">
-        <a href="https://github.com/ContextMark/CML" target="_blank" style="display: inline-flex; align-items: center; gap: 0.4em;">
-          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
-            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 
-            2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 
-            0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
-            -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 
-            1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78
-            -.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
-            -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6
-            7.6 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 
-            2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56 
-            .82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 
-            3.95.29.25.54.73.54 1.48 0 1.07-.01 
-            1.93-.01 2.2 0 .21.15.46.55.38A8.013 
-            8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
-          </svg>
-        </a>
+      <div class="line">
+        <span>
+          <a href="https://github.com/ContextMark/CML" target="_blank" style="display: inline-flex; align-items: center; gap: 0.4em;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 
+              2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 
+              0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+              -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 
+              1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78
+              -.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+              -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6
+              7.6 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 
+              2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56 
+              .82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 
+              3.95.29.25.54.73.54 1.48 0 1.07-.01 
+              1.93-.01 2.2 0 .21.15.46.55.38A8.013 
+              8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+          </a>
+        </span>
+        <span>
+          <a href="https://doc-war.com" target="_blank" style="display: inline-flex; align-items: center; gap: 0.4em;">
+            <img src="../logo.png" class="icon">
+          </a>
+        </span>
       </div>
     </div>
     <div  class="content">
@@ -329,7 +380,7 @@
         <p>五种关系分隔符，源自对自然语言的语义表达结构的抽象提炼，亦是对表达歧义与结构可控性问题的深入思考。</p>
       
         <h3>自然语言参考</h3>
-        <p>CML定义的5种关系分隔符，参考的是自然语言中隐含的最基本的语义结构（<strong>修饰</strong>、<strong>顺承</strong>、<strong>并列</strong>、<strong>对照</strong>、<strong>组合</strong>）</p>
+        <p>CML定义的5种关系分隔符，参考的是自然语言中隐含的最基本的语义结构（<strong>修饰</strong>、<strong>顺承</strong>、<strong>并列</strong>、<strong>对照</strong>、<strong>组合</strong>）。这五种语义结构，与中英法日等具体自然语言的语法表达风格无关。</p>
         <pre><code>
       自然语言示例：
       例子: 那个<code>戴着帽子</code><sup>C</sup> 的<code>高个子</code><sup>B</sup><code>男人</code><sup>C</sup>               (A←B←C)
@@ -356,7 +407,7 @@
         <p>CSE范式并不试图预先显式解决一切结构语义上的歧义，而是在实际表达时，借助关系分隔符所连接的语义Token，作为关系语义的上下文，让LLM推理出最合理的语义关系和对应的权重优先级。</p>
       
         <h3>显式结构的核心价值</h3>
-        <p>善用Token内部的语义结构表达，也反映了CML在显式编码上的核心价值。</p>
+        <p>主张善用Token内部的语义结构表达，也反映了CML在显式编码上的核心价值。</p>
         <p>CML之所以接近于自然语言，而不等于纯自然语言，除了用于声明重要语义，还有其表达上的必要性。相比自然语言推理在token切分上的完全不可控，显式分割的本质，是进行语义纵向层级和横向关系的拆分，进而消除关系歧义，最终提升可控性与可解释性。</p>
       </section>
     </div>
@@ -373,6 +424,19 @@
         tab.classList.add('active');
         document.getElementById(tab.dataset.tab).classList.add('active');
       });
+    });
+    //跨页面处理语言跳转
+    const current = document.querySelector('.current-language');
+    const popup = document.querySelector('.language-popup');
+  
+    current.addEventListener('click', () => {
+      popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    });
+  
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.language-menu')) {
+        popup.style.display = 'none';
+      }
     });
   </script>
   <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script>

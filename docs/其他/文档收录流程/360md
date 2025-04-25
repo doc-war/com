@@ -1,0 +1,24 @@
+
+
+
+
+# 360搜索
+
+比搜索指数高一倍，不用再验证资质了
+
+1. 问 360 [360站长平台-站点管理](https://zhanzhang.so.com/sitetool)。
+2. 登录你的 360 账号（如果没有，请先注册）。    （ <span style="color:red"> zhaoliwei@yyyyer</span>）
+3. 添加你的网站并验证所有权（可以通过上传 HTML 文件或添加 `<meta>` 标签等方式验证）。
+4. 在左侧菜单中选择“链接提交” -> “Sitemap 提交”。
+5. 输入你的 sitemap URL（例如 `https://yourdomain.com/sitemap.xml`）并点击“提交”。
+
+![image-20250315222301860](./assets/image-20250315222301860.png)
+
+
+
+
+
+
+
+![image-20250315224000683](./assets/image-20250315224000683.png)
+

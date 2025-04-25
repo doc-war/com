@@ -1,0 +1,454 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link href="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+
+
+  <title>CML（Context Mark Language）</title>
+
+  <style type="text/css">
+    /*
+    页面背景色、正文文字主色、线条颜色、代码块背景色
+    */
+    :root {
+      --color-bg: #282c34;          
+      --color-text: #fff;       
+      --color-line:#544c48;   
+      --color-code-bg: #f6f8fa33;  
+    }
+    /* :root {
+      --color-bg: #fff;          
+      --color-text: #000;       
+      --color-line:#ddd;   
+      --color-code-bg: #b6b8ba33;  
+    } */
+
+    body {
+      padding: 5vh 20vw;
+      color: var(--color-text);
+      background-color: var(--color-bg);
+    }
+    .topnav{
+      display: flex;
+      justify-content: space-between;
+    }
+    h1{
+      font-size:48px;
+    }
+
+    img{
+      max-width: 100%; /* 图片最大宽度不超过容器 */
+      height: auto;    /* 高度自动按比例缩放 */
+    }
+    a {
+      color: var(--color-text);
+    }
+    code {
+      background-color: var(--color-code-bg);
+      padding: 0.2em 0.4em;
+      border-radius: 4px;
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+      font-size: 90%;
+    }
+    pre {
+      background-color: var(--color-code-bg);
+      padding: 1em;
+      border-radius: 6px;
+      overflow: auto;
+      font-size: 14px;
+      line-height: 1.5;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+    }
+
+    pre code {
+      background: none;
+      font-size: 100%;
+      padding: 0;
+      border-radius: 0;
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+    }
+    pre code code{
+      background: none;
+      font-size: 100%;
+      padding: 0;
+      border-radius: 0;
+      font-family: Consolas, Monaco, 'Courier New', monospace;
+    }
+  </style>
+  <style>
+    .language-menu {
+      display: inline-block;
+      position: relative;
+      font-size: 14px;
+    }
+    .current-language {
+      cursor: pointer;
+      user-select: none;
+    }
+    .language-popup {
+      display: none;
+      position: absolute;
+      top: 100%;
+      left: 0;
+      background: var(--color-text);
+      color:var(--color-bg);
+      padding: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+      white-space: nowrap;
+      z-index: 100;
+    }
+    .language-line{
+      margin:10px;
+    }
+    .language-popup a {
+      display: block;
+      color: #000;
+      text-decoration: none;
+      margin: 2px 0;
+    }
+    .language-popup a:hover {
+      text-decoration: underline;
+    } 
+  </style>
+  <style>
+    .logo {
+      border: 3px solid #fff;
+      border-radius: 150px;
+      padding: 4px;
+      width: 150px;
+      height: 150px
+    }
+    .line{
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .icon{
+      width: 28px;
+      height: 28px;
+    }
+    .red{
+      color:red;
+    }
+    .blue{
+      color:blue;
+    }
+    .green{
+      color:green;
+    }
+    #tabs {
+      display: flex;
+      list-style: none;
+      padding: 0;
+      border-bottom: 1px solid var(--color-line);
+      align-items: center; 
+      margin-top:30px;
+    }
+    #tabs li {
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size:20px;
+      border-bottom: none;
+      margin-right: 5px;
+
+    }
+    #tabs li.active {
+      font-weight: bold;
+      font-size:24px;
+      background-color: var(--color-code-bg);
+    }
+    .tab-pane {
+      display: none;
+      padding: 20px;
+      min-height: 300px;
+      width:100%;
+      min-width: 100%;
+    }
+    .tab-pane.active {
+      display: block;
+    }
+  </style>
+</head>
+
+<body>
+  <div id="app">
+    <div class="topnav">
+      <div class="language-menu">
+        <div class="current-language">English ▾</div>
+        <div class="language-popup" style="display: none;">
+          <div class="language-line"><a href="/docs/CML">简体中文</a></div>
+          <!-- 如果当前是中文页面，也可反向加一行跳英文 -->
+          <div class="language-line">English <span style="color:#999;">(current)</span></div>
+        </div>
+      </div>
+      <div class="line">
+        <span>
+          <a href="https://github.com/ContextMark/CML" target="_blank" style="display: inline-flex; align-items: center; gap: 0.4em;">
+            <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 
+              2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 
+              0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52
+              -.01-.53.63-.01 1.08.58 1.23.82.72 1.21 
+              1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78
+              -.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15
+              -.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82a7.6
+              7.6 0 0 1 2-.27c.68 0 1.36.09 2 .27 1.53-1.04 
+              2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56 
+              .82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 
+              3.95.29.25.54.73.54 1.48 0 1.07-.01 
+              1.93-.01 2.2 0 .21.15.46.55.38A8.013 
+              8.013 0 0 0 16 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+          </a>
+        </span>
+        <span>
+          <a href="https://doc-war.com" target="_blank" style="display: inline-flex; align-items: center; gap: 0.4em;">
+            <img src="../logo.png" class="icon">
+          </a>
+        </span>
+      </div>
+    </div>
+    <div  class="content">
+      <section >
+        <h1>CML</h1>
+        <p>Context Mark Language (CML) is a new markup architecture designed for the AI era, addressing the needs of contextual markup with a structure that aligns with natural semantics.</p>
+        <p>The core feature of the Context Mark Language syntax is its use of a single string to represent multi-dimensional, composable, and implicitly contextual semantic structures. It offers a simpler experience for writing, embedding, transmitting, storing, and computing.</p>
+        <h2>Paper</h2>
+        <p>CML elaborates on the Context Structure Expression model. For details, refer to the paper:</p>
+        <ul>
+          <li>
+            <a href="https://doi.org/10.5281/zenodo.15255534">DOI 10.5281/zenodo.15255534.</a>
+          </li>
+          <li>
+            English version：<a href="https://github.com/ContextMark/CML/blob/main/paper/CSE.md">CSE:A Unified Modeling Framework for Semantic Contextual Markup</a>
+          </li>
+          <li>
+            Chinese version：<a href="https://github.com/ContextMark/CML/blob/main/paper/CSE_zh.md">CSE模型：上下文语义标记的统一建模框架</a>
+          </li>
+        </ul>
+      </section >
+      <ul id="tabs">
+        <li class="active" data-tab="tab1">Semantic Architecture</li>
+        <li data-tab="tab2">Semantic Structure</li>
+        <li data-tab="tab3">Encoding Rules</li>
+        <li data-tab="tab4">Minimal Completeness</li>
+      </ul>
+      
+      <section id="tab1" class="tab-pane active">
+        <!-- <h2>1. Semantic Architecture</h2> -->
+        <p>Context Mark Language can express semantic contextual structures in an extremely concise way.</p>
+        <p>The CML string, used to mark knowledge contexts, is composed of a series of two types of <code>semantic primitives</code>: <code>semantic tokens</code> and <code>relation separators</code>.</p>
+        <ul>
+          <li><strong>Semantic Token</strong>: The basic unit for describing contextual semantics in CML. It can be any form of text fragment. It corresponds to the concept of a token in the LLM domain, but it is not lexical in nature—instead, it carries abstract dimensions of natural semantics.</li>
+          <li><strong>Relation Separator</strong> (<code>:</code>, <code>.</code>, <code>@</code>, <code>+</code>, <code>space</code>): Used to express the semantic relationships of contextual structure between semantic tokens. It implicitly declares the weighted prioritization of these relationships.</li>
+        </ul>
+        <p>By freely combining these semantic primitives and encoding them, a complete CML string is formed.</p>
+        <img src="./assets/image-20250409231615178.png" alt="image-20250409231615178">
+        <h3>Expression Rules</h3>
+        <p>CML uses a linear structure to describe semantic relationships (which is easy to embed).</p>
+        <p>Assuming we use <code>&lt;semantic_token&gt;</code> to represent a semantic token and <code>&lt;separator&gt;</code> to represent a relation separator, the rules can be roughly defined as follows:</p>
+        <ol>
+          <li>Each <strong>semantic token</strong> (<code>&lt;semantic_token&gt;</code>) must be connected by one and only one <strong>relation separator</strong> (<code>&lt;separator&gt;</code>).</li>
+          <li>Semantic tokens and relation separators always appear in an alternating pattern: <code>&lt;semantic_token&gt;&lt;separator&gt;&lt;semantic_token&gt;&lt;separator&gt;...&lt;semantic_token&gt;</code>.</li>
+        </ol>
+      </section>      
+      
+      <section id="tab2" class="tab-pane">
+        <!-- <h2>2. Semantic Structure</h2> -->
+        <p>CML revolves around three core semantic needs—<strong>priority expression</strong> of tokens, <strong>structural extensibility</strong>, and <strong>logical orthogonality</strong>. From these, five highly expressive and composable semantic structure primitives are abstracted, forming the fundamental units for constructing all logical semantic relationships.</p>
+        <p>These five structural primitives are categorized into <code>Basic Structures</code>, <code>Composite Structures</code>, and <code>Combinatorial Structures</code>. Basic structures describe simple relationships among semantic tokens and can serve as components of composite structures. Combinatorial structures are higher-level containers that can connect any semantic tokens, basic structures, or composite structures.</p>
+      
+        <h3>a. Supplementary Relationship</h3>
+        <p><span class="red">Basic Structure</span>. The semantic object on the right supplements, explains, or restricts the one on the left. It usually acts as a semantic addition without altering the original structure.</p>
+        <pre><code>f:A∋B∋C</code></pre>
+        <p>Expressed using the <code>@</code> symbol. The further left, the higher the priority, indicating greater weight.</p>
+        <p>For example:</p>
+        <ul>
+          <li><code>name</code>@<code>identity</code>@<code>organization</code></li>
+          <li><code>name</code>@<code>company</code>@<code>position</code></li>
+        </ul>
+        <p>Both highlight "name" first, but declare different priority emphases overall.</p>
+      
+        <h3>b. Linear Progression Relationship</h3>
+        <p><span class="red">Basic Structure</span>. An ordered, stepwise semantic relationship. It can express directional flows like progression, transformation chains, causal chains, sequences, type refinement, or lifecycles.</p>
+        <pre><code>f:A→B→C</code></pre>
+        <p>Expressed with the <code>.</code> symbol. Whether the left side has slightly higher weight depends on LLM interpretation based on actual semantic tokens.</p>
+        <p>For example:</p>
+        <ul>
+          <li><code>Organism</code>.<code>Animal</code>.<code>Human</code> — focuses on the subclass <code>Human</code>.</li>
+          <li><code>Product Design</code>.<code>Development</code>.<code>Operations</code> — the semantic tokens clearly describe a lifecycle.</li>
+        </ul>
+      
+        <h3>c. Parallel Set Relationship</h3>
+        <p><span class="red">Basic Structure</span>. Multiple semantic elements in parallel, like a set, property group, or multi-branch description. No priority or order; elements can be rearranged freely.</p>
+        <pre><code>f:{A, B, C}</code></pre>
+        <p>Expressed with the <code>+</code> symbol. No priority difference in weight.</p>
+        <p>For example:</p>
+        <ul>
+          <li><code>Man</code>+<code>Woman</code> — both equally describe the concept of <code>Human</code>.</li>
+          <li><code>Name</code>+<code>Age</code>+<code>Username</code> — registration attributes of an account.</li>
+        </ul>
+      
+        <h3>d. Mapping Relationship</h3>
+        <p>A <span class="blue">composite</span> correspondence between one semantic structure and another, in key-value form. Both sides can use any combination of the three basic relationships to support two-dimensional semantic expression.</p>
+        <pre><code>f(A,B) ↦ f(C,D,E)</code></pre>
+        <p>Expressed with the <code>:</code> symbol. It's like a key-value pair, but more flexible—both key and value can be basic structures, not just semantic tokens.</p>
+        <pre><code>&lt;key-context-struct&gt;:&lt;value-context-struct&gt;</code></pre>
+        <p>Examples of valid mapping structures:</p>
+        <ul>
+          <li><code>Website</code>:<code>doc-war.com</code></li>
+          <li><code>Website</code>@<code>doc-war.com</code>:<code>Document Battlefield</code>@<code>Contribute Judgment Value</code></li>
+          <li><code>AI</code>+<code>LLM</code>:<code>ChatGPT</code>+<code>Claude</code>@<code>v3.7</code></li>
+          <li><code>ask</code>.<code>answer</code>: <code>What is CML?</code>.<code>CML is a semantic structure language aligned with natural semantics</code></li>
+        </ul>
+      
+        <h5>Special Constraint</h5>
+        <p>CML <strong>does not support nested mappings</strong> to avoid increasing parsing complexity. For example, expressions like <code>User:ZhangSan:Delete+Query</code> are syntactically invalid.</p>
+      
+        <h3>e. Combination Relationship</h3>
+        <p>Multiple semantic structures <span class="green">combine</span> into a new semantic whole without losing their original meaning. Conversely, they can also be decomposed. Essentially, this acts as a "semantic structure container" capable of computation.</p>
+        <pre><code>
+      f(A)+f(B) = f(A+B)
+      f(A) = f(A+B) - f(B)
+        </code></pre>
+        <p>Expressed using a <code>space</code>, which overlays two structures semantically.</p>
+        <p>Because <code>space</code> has the lowest semantic precedence and is not order-sensitive, it's also used as the overall operator in plaintext CML strings. Concatenating two CML strings with a space produces a valid CML string that retains original semantics.</p>
+        <pre><code>plaintext(A)+space+plaintext(B) = plaintext(A+space+B)</code></pre>
+        <p>This feature of <strong>lossless restoration</strong>—free combination and decomposition—gives CML semantic computation properties, not just semantic expression. It lays a solid foundation for collaborative annotation workflows.</p>
+      
+        <h5>Special Constraint</h5>
+        <p>Because <code>space</code> carries the responsibility of lossless computation, expressions like <code>If User:ZhangSan how about</code>, while syntactically valid, violate the principle of lossless combination. Once split and recombined, the position shift disrupts the original meaning.</p>
+      
+        <h3>Operator Precedence</h3>
+        <p>Relationship operations work similarly to expression parsing in programming languages: a left-to-right lexical scan determines the semantic operation order based on the precedence of relation separators.</p>
+        <p>CML defines a clear precedence to ensure consistency in semantic interpretation during annotation and inference.</p>
+        <pre><code>Supplementary Relationship<sup>a</sup> > Linear Progression Relationship<sup>b</sup> > Parallel Set Relationship<sup>c</sup> > Mapping Relationship<sup>d</sup> > Combination Relationship<sup>e</sup></code></pre>
+      </section>
+
+      <section id="tab3" class="tab-pane">
+        <!-- <h2>3. Encoding Rules</h2> -->
+        <p>Based on semantic expression, two standard CML string patterns are defined. The core difference lies in the stage and form used to mark the semantic token (semantic_token) itself.</p>
+        <p><img src="./assets/image-20250402230135032.png" alt="Encoding Rules Diagram"></p>
+      
+        <h3>Natural Language Format</h3>
+        <p>The natural language format is designed for a <code>plain text editing</code> experience for document engineers, suitable for human-readable scenarios.</p>
+        <p>It uses the backtick marker (inline code) from <strong>Markdown syntax</strong>[15] to wrap semantic tokens (semantic_token). Document engineers can use WYSIWYG Markdown editors as a plain text editing environment for semantic structures, which is highly efficient and intuitive.</p>
+        <p>For example, writing a plain text string in Markdown:</p>
+        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
+        <p>This can be rendered in real-time into the following natural semantic effect, clear at a glance:</p>
+        <p><code>token1</code>.<code>token2</code>@<code>token3</code>+<code>token4</code> <code>token5</code>:<code>token6</code></p>
+      
+        <h3>Encoding Format</h3>
+        <p>CML strings with backticks <code>`</code>, including delimiters, may introduce unexpected parsing boundaries and escaping requirements in certain special scenarios.</p>
+        <p>Therefore, for <code>embedding</code>, <code>storage</code>, <code>parsing</code>, and <code>computation</code> scenarios, CML defines a safer and more consistent encoded output format.</p>
+        <p><img src="./assets/image-20250418171524138.png" alt="Encoding Format Diagram"></p>
+        <p>Example:</p>
+        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
+        <p>The above plain text CML string is encoded in the following order:</p>
+        <ol>
+          <li>Sequentially extract <code>semantic tokens</code> and <code>relationship delimiters</code> from the original CML string.</li>
+          <li>Encode each semantic token (excluding the backticks) into a byte stream using UTF-8, then perform <strong>Base58 encoding</strong>[16] on the byte stream to generate a Base58 string.</li>
+        </ol>
+        <pre><code>
+              token1 → encode → zyvFCwFv
+              token2 → encode → zyvFCwFw
+              token3 → encode → zyvFCwFx
+              token4 → encode → zyvFCwFy
+              token5 → encode → zyvFCwFz
+              token6 → encode → zyvFCwG1
+        </code></pre>
+        <ol start="3">
+          <li>Reassemble using the original relationship delimiters (this process essentially replaces the backtick wrapping with Base58).</li>
+        </ol>
+        <pre><code>zyvFCwFv.zyvFCwFw@zyvFCwFx+zyvFCwFy zyvFCwFz:zyvFCwG1</code></pre>
+        <ol start="4">
+          <li>Finally, perform UTF-8+Base58 encoding again on the entire string to eliminate all special characters.</li>
+        </ol>
+        <pre><code>3EkzyE8r5SqnU6KSbLS98LVLJxFoNvskzaazkuEEryWminqaGwJz13YoatvfoRWoDyrofwUCQ</code></pre>
+      
+        <h3>Line Breaks and Multiple Spaces</h3>
+        <p>In natural editing, especially in long-context tagging scenarios, humans may prefer to split long strings with line breaks for readability rather than strictly using spaces. Therefore, the CML editor should support symbol equivalence, automatically converting various line break symbols like <code>\n</code>, <code>\r\n</code>, and <code>\r</code> to a <code>space</code> symbol during parsing and storage of plain text format.</p>
+        <p>Similarly, in human editing scenarios, users may want to insert multiple spaces in a single line to enhance the visual clarity of structural separation. The CML editor should also support this equivalence.</p>
+        <p>Before Base58 encoding, <code>line breaks</code> and excessive <code>spaces</code> should be explicitly eliminated and uniformly converted to a <code>single space</code> symbol.</p>
+      </section>
+
+      <section id="tab4" class="tab-pane">
+        <!-- <h2>4. Minimal Completeness</h2> -->
+        <p>The five relationship delimiters are derived from an abstract refinement of the semantic expression structures in natural language, as well as a deep consideration of expression ambiguity and structural controllability.</p>
+      
+        <h3>Natural Language Reference</h3>
+        <p>The five relationship delimiters defined by CML are based on the most fundamental semantic structures implicit in natural language (<strong>modification</strong>, <strong>succession</strong>, <strong>parallel</strong>, <strong>contrast</strong>, <strong>combination</strong>). These five semantic structures are independent of the grammatical expression styles of specific natural languages such as Chinese, English, French, or Japanese.</p>
+        <pre><code>
+            Natural Language Examples:
+            Example: The <code>man</code><sup>A</sup> who is <code>tall</code><sup>B</sup> and <code>wearing a hat</code><sup>C</sup>               (A←B←C)
+            Example: He <code>gets up</code><sup>A</sup>, <code>dresses</code><sup>B</sup>, and <code>goes out</code><sup>C</sup>                    (A→B→C)
+            Example: I like <code>apples</code><sup>A</sup>, <code>bananas</code><sup>B</sup>, and <code>oranges</code><sup>C</sup>                  {A, B, C}
+            Example: <code>ChatGPT</code><sup>A</sup>, <code>Claude</code><sup>B</sup>, and <code>DeepSeek</code><sup>C</sup> are all <code>AI</code><sup>D</sup>, also called <code>LLM</code><sup>E</sup>  
+             (A+B+C ↦ D+E)
+            Example: <code>This flower</code><sup>A</sup> + <code>is beautiful</code><sup>B</sup> = <code>This flower is beautiful</code><sup>A+B</sup>             
+            (A+B=AB)
+        </code></pre>
+        <p>In theory, the combination of these five primitive relationships can express the vast majority of logical relationships, offering considerable completeness.</p>
+      
+        <h3>Semantics Within Tokens</h3>
+        <p>For logical relationships such as exclusion, quantifier ranges, or nested mappings, CML does not provide native support. Instead, these are delegated to the token layer, allowing flexible expression in conjunction with <code>supplementary relationships</code> to avoid structural pollution, which could introduce complexity in priority operations and human-readable comprehension.</p>
+        <p>This is because tokens themselves can also express structure.</p>
+        <pre><code>
+            Natural Language Example: "His <code>age</code> is approximately <code>18~25 years old</code>."
+            Annotation:
+            ❌ `age`:`range`:`18-25`       
+             (Illegal nesting and unnecessary, can be merged forward or backward)
+            ❌ `age`:`>18`+`<25`           
+             (No need to split so finely)
+            ✅ `age`:`range:18-25`        
+             (Nesting within the token aligns with natural semantics)
+            ✅ `age`:`18-25`      
+        </code></pre>
+      
+        <p>This reflects the <strong>principle of minimalism</strong> in structure:</p>
+        <p>The CSE paradigm does not attempt to explicitly resolve all structural semantic ambiguities in advance. Instead, during actual expression, it leverages the semantic tokens connected by relationship delimiters as the context for relational semantics, allowing the LLM to infer the most reasonable semantic relationships and corresponding priority weights.</p>
+      
+        <h3>Core Value of Explicit Structure</h3>
+        <p>Advocating the use of semantic structure expression within tokens also reflects the core value of CML in explicit encoding.</p>
+        <p>The reason CML is close to natural language but not equivalent to pure natural language lies in its necessity for declaring important semantics and its expressive requirements. Compared to the complete uncontrollability of token segmentation in natural language inference, the essence of explicit segmentation is to break down semantics into vertical hierarchies and horizontal relationships, thereby eliminating relational ambiguities and ultimately enhancing controllability and interpretability.</p>
+      </section>
+    </div>
+  </div>
+
+  <script>
+    // 处理tab切换
+    const tabs = document.querySelectorAll('#tabs li');
+    const panes = document.querySelectorAll('.tab-pane');
+
+    tabs.forEach(tab => {
+      tab.addEventListener('click', () => {
+        tabs.forEach(t => t.classList.remove('active'));
+        panes.forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        document.getElementById(tab.dataset.tab).classList.add('active');
+      });
+    });
+
+    //跨页面处理语言跳转
+    const current = document.querySelector('.current-language');
+    const popup = document.querySelector('.language-popup');
+  
+    current.addEventListener('click', () => {
+      popup.style.display = popup.style.display === 'none' ? 'block' : 'none';
+    });
+  
+    document.addEventListener('click', (e) => {
+      if (!e.target.closest('.language-menu')) {
+        popup.style.display = 'none';
+      }
+    });
+    
+  </script>
+  <!-- <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script> -->
+</body>
+</html>
