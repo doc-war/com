@@ -247,7 +247,7 @@
           <li><strong>关系分隔符</strong>（<code>:</code>、<code>.</code>、<code>@</code>、<code>+</code>、<code>空格</code>）用于表达这些语义Token之间的上下文结构关系的语义，隐式声明加权分配的优先级。</li>
         </ul>
         <p>在语义基元自由组合的基础上，进行编码，就构成了最终的CML字符串</p>
-        <img src="./assets/image-20250409231615178.png" alt="image-20250409231615178">
+        <img src="./assets/image-20250409231615178.png" alt="编码格式图示">
         <h3>表达规则</h3>
         <p>CML采用线性结构来描述语义关系（易于嵌入）。</p>
         <p>假设我们用 <code>&lt;semantic_token&gt;</code> 来表示语义Token，<code>&lt;separator&gt;</code> 来表示关系分隔符。那么，规则大致可以这样定义：</p>
@@ -345,7 +345,7 @@
         <h3>编码格式</h3>
         <p>带反引号<code>`</code>的CML字符串，包括分割符号，在某些特殊场景下，可能会带来偏离预期的解析边界和转义要求。</p>
         <p>因此，面向<code>嵌入</code>、<code>存储</code>、<code>解析</code>、<code>运算</code>场景，CML定义了更安全一致的编码输出格式。</p>
-        <p><img src="./assets/image-20250418171524138.png" alt="编码格式图示"></p>
+        <p><img src="./assets/image-20250409231615178.png" alt="编码格式图示"></p>
         <p>示例</p>
         <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
         <p>将以上明文CML字符串按如下顺序编码：</p>
