@@ -111,3 +111,31 @@ git pull origin main
 
 
 
+## 四、穿墙
+
+众所周知的原因，443端口极其不稳定，所以更建议采用ssh连接。
+但是墙是万能的，22端口作为一个非http基本端口，反而更容易被完全性封杀，导致
+![image-20250520190746105](./assets/image-20250520190746105.png)
+
+所幸的是，github支持ssh over https
+
+
+
+### 配置转发
+
+新建一个无后缀的config文件。
+
+![image-20250520190841634](./assets/image-20250520190841634.png)
+
+写入如下内容
+```yaml
+Host github.com
+  Hostname ssh.github.com
+  Port 443
+  User git
+```
+
+将ssh端口改成443
+
+第一次push时，会提示你确认，输入yes即可。
+![image-20250520191147115](./assets/image-20250520191147115.png)
