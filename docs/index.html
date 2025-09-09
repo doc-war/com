@@ -33,6 +33,7 @@
             margin: 0;
             padding: 0;
             background-image: url(./img/background.png);
+            overflow: hidden; /* 禁用滚动 */
         }
         
         .container {
@@ -101,6 +102,23 @@
         .spinning {
             animation: spin 2s linear infinite;
         }
+
+        dialog {
+            width: 80%;
+            max-width: 600px;
+            padding: 10px;
+            border: none;
+            background: rgba(0, 0, 0, 0.8);
+        }
+
+        dialog img {
+            width: 100%;
+            border-radius: 8px;
+        }
+
+        /* dialog::backdrop {
+            background: rgba(0, 0, 0, 0.7);
+        } */
     </style>
 </head>
 <body>
@@ -116,12 +134,12 @@
                 <a href="https://orcid.org/0009-0004-5950-4104" target="_blank"><img class="icon" src="./img/orcid.svg" title="论文" ></a>
                 <img  class="icon" src="./img/logo.png" title="三行代码接入通知">
                 <img  class="icon" src="./img/axue.png" title="前端组件框架" >
-                <img  class="icon" src="./img/cml.png" title="上下文标记语言" >
+                <img  class="icon" src="./img/cml.png" title="上下文标记语言" id = "cmllogo">
                 <img  class="icon" src="./img/mdp.png" title="模型文档协议">
                 <img  class="icon" src="./img/docwar.png" title="下一代文档框架">
                 <img  class="icon" src="./img/mdmarker.png" title="MD标记器">
-                <img  class="icon" src="./img/card.png" title="场景码协议">
-                <img  class="icon" src="./img/EREnetwork.svg" title="ERE管道ID协议">
+                <img  class="icon" src="./img/card.png" title="场景码" id="sceneCode">
+                <img  class="icon" src="./img/EREnetwork.svg" title="ERE架构&管道ID协议" id="erenetwork">
                 <img  class="icon" src="./img/p2pCypher.svg" title="零信任端到端加密架构">
                 
             </div>
@@ -133,6 +151,25 @@
     <video id="bgMusic" loop autoplay style="display: none;">
         <source src="./sound/wave.mp4" type="video/mp4">
     </video>
+
+    <dialog id="claudeImgDialog">
+        <img src="./img/cml/claude20250830.png" alt="AI怎么说?">
+        <img src="./img/cml/claude202508302.png" alt="AI怎么说?">
+    </dialog>
+    <script>
+        const cmlIcon = document.getElementById('cmllogo');
+        const dialog = document.getElementById('claudeImgDialog');
+
+        cmlIcon.addEventListener('click', () => {
+            dialog.showModal(); // 显示模态框
+        });
+        // 自动关闭模态框，点击背景时关闭
+        dialog.addEventListener('click', (e) => {
+            if (e.target === dialog) {
+                dialog.close(); // 点击背景区域时关闭对话框
+            }
+        });
+    </script>
 
     <script>
         let texts = [
@@ -196,5 +233,19 @@
             }
         }, { once: true });
     </script>
+    <!-- 引入 Tippy.js -->
+     <script src="https://unpkg.com/@popperjs/core@2"></script>
+     <script src="https://unpkg.com/tippy.js@6"></script>
+    <script>
+        tippy('#sceneCode', {
+            content:"提升30%+的信息容量？",
+            trigger: 'click',   //只有点击时才显示
+            placement: 'right',    //位置
+            // animation: 'scale',    //动画效果
+            theme: 'material',    //主题颜色
+            interactive: false,  // 不响应 hover
+        });       
+    </script>
+    
 </body>
 </html>

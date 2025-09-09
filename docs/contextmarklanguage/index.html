@@ -39,6 +39,16 @@
     h1{
       font-size:48px;
     }
+    h2{
+      font-size:36px;
+    }
+    h3{
+      font-size:24px;
+      color:#ff8822;
+    }
+    h4{
+      color:#a2e8ff;
+    }
 
     img{
       max-width: 100%; /* 图片最大宽度不超过容器 */
@@ -135,6 +145,10 @@
     .red{
       color:red;
     }
+    .sup{
+      font-size:13px;
+      color:white;
+    }
     .blue{
       color:blue;
     }
@@ -152,14 +166,14 @@
     #tabs li {
       padding: 10px 20px;
       cursor: pointer;
-      font-size:20px;
+      font-size:24px;
       border-bottom: none;
       margin-right: 5px;
 
     }
     #tabs li.active {
       font-weight: bold;
-      font-size:24px;
+      font-size:20px;
       background-color: var(--color-code-bg);
     }
     .tab-pane {
@@ -171,6 +185,17 @@
     }
     .tab-pane.active {
       display: block;
+    }
+    .gray-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #ccc;
+    }
+    .gray-table th,
+    .gray-table td {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      text-align: left;
     }
   </style>
 </head>
@@ -218,6 +243,7 @@
         <h1>CML</h1>
         <p>Context Mark Language (CML) is a new markup architecture designed for the AI era, addressing the needs of contextual markup with a structure that aligns with natural semantics.</p>
         <p>The core feature of the Context Mark Language syntax is its use of a single string to represent multi-dimensional, composable, and implicitly contextual semantic structures. It offers a simpler experience for writing, embedding, transmitting, storing, and computing.</p>
+        <p>Latest Version: 1.0.0-beta.1</p>
         <h2>Paper</h2>
         <p>CML elaborates on the Context Structure Expression model. For details, refer to the paper:</p>
         <ul>
@@ -235,8 +261,9 @@
       <ul id="tabs">
         <li class="active" data-tab="tab1">Semantic Architecture</li>
         <li data-tab="tab2">Semantic Structure</li>
-        <li data-tab="tab3">Encoding Rules</li>
-        <li data-tab="tab4">Minimal Completeness</li>
+        <li data-tab="tab3">Markup Format</li>
+        <li data-tab="tab4">Encoding Rules</li>
+        <li data-tab="tab5">Minimal Completeness</li>
       </ul>
       
       <section id="tab1" class="tab-pane active">
@@ -263,8 +290,8 @@
         <p>CML revolves around three core semantic needs—<strong>priority expression</strong> of tokens, <strong>structural extensibility</strong>, and <strong>logical orthogonality</strong>. From these, five highly expressive and composable semantic structure primitives are abstracted, forming the fundamental units for constructing all logical semantic relationships.</p>
         <p>These five structural primitives are categorized into <code>Basic Structures</code>, <code>Composite Structures</code>, and <code>Combinatorial Structures</code>. Basic structures describe simple relationships among semantic tokens and can serve as components of composite structures. Combinatorial structures are higher-level containers that can connect any semantic tokens, basic structures, or composite structures.</p>
       
-        <h3>a. Supplementary Relationship</h3>
-        <p><span class="red">Basic Structure</span>. The semantic object on the right supplements, explains, or restricts the one on the left. It usually acts as a semantic addition without altering the original structure.</p>
+        <h3>a. Supplementary Relationship<sup class="sup">Basic Structure</sup></h3>
+        <p>The semantic object on the right supplements, explains, or restricts the one on the left. It usually acts as a semantic addition without altering the original structure.</p>
         <pre><code>f:A∋B∋C</code></pre>
         <p>Expressed using the <code>@</code> symbol. The further left, the higher the priority, indicating greater weight.</p>
         <p>For example:</p>
@@ -274,8 +301,8 @@
         </ul>
         <p>Both highlight "name" first, but declare different priority emphases overall.</p>
       
-        <h3>b. Linear Progression Relationship</h3>
-        <p><span class="red">Basic Structure</span>. An ordered, stepwise semantic relationship. It can express directional flows like progression, transformation chains, causal chains, sequences, type refinement, or lifecycles.</p>
+        <h3>b. Linear Progression Relationship<sup class="sup">Basic Structure</sup></h3>
+        <p>An ordered, stepwise semantic relationship. It can express directional flows like progression, transformation chains, causal chains, sequences, type refinement, or lifecycles.</p>
         <pre><code>f:A→B→C</code></pre>
         <p>Expressed with the <code>.</code> symbol. Whether the left side has slightly higher weight depends on LLM interpretation based on actual semantic tokens.</p>
         <p>For example:</p>
@@ -284,8 +311,8 @@
           <li><code>Product Design</code>.<code>Development</code>.<code>Operations</code> — the semantic tokens clearly describe a lifecycle.</li>
         </ul>
       
-        <h3>c. Parallel Set Relationship</h3>
-        <p><span class="red">Basic Structure</span>. Multiple semantic elements in parallel, like a set, property group, or multi-branch description. No priority or order; elements can be rearranged freely.</p>
+        <h3>c. Parallel Set Relationship<sup class="sup">Basic Structure</sup></h3>
+        <p>Multiple semantic elements in parallel, like a set, property group, or multi-branch description. No priority or order; elements can be rearranged freely.</p>
         <pre><code>f:{A, B, C}</code></pre>
         <p>Expressed with the <code>+</code> symbol. No priority difference in weight.</p>
         <p>For example:</p>
@@ -294,8 +321,8 @@
           <li><code>Name</code>+<code>Age</code>+<code>Username</code> — registration attributes of an account.</li>
         </ul>
       
-        <h3>d. Mapping Relationship</h3>
-        <p>A <span class="blue">composite</span> correspondence between one semantic structure and another, in key-value form. Both sides can use any combination of the three basic relationships to support two-dimensional semantic expression.</p>
+        <h3>d. Mapping Relationship<sup class="sup">Composite Structure</sup></h3>
+        <p>A composite correspondence between one semantic structure and another, in key-value form. Both sides can use any combination of the three basic relationships to support two-dimensional semantic expression.</p>
         <pre><code>f(A,B) ↦ f(C,D,E)</code></pre>
         <p>Expressed with the <code>:</code> symbol. It's like a key-value pair, but more flexible—both key and value can be basic structures, not just semantic tokens.</p>
         <pre><code>&lt;key-context-struct&gt;:&lt;value-context-struct&gt;</code></pre>
@@ -307,11 +334,11 @@
           <li><code>ask</code>.<code>answer</code>: <code>What is CML?</code>.<code>CML is a semantic structure language aligned with natural semantics</code></li>
         </ul>
       
-        <h5>Special Constraint</h5>
+        <h4>Special Constraint</h4>
         <p>CML <strong>does not support nested mappings</strong> to avoid increasing parsing complexity. For example, expressions like <code>User:ZhangSan:Delete+Query</code> are syntactically invalid.</p>
       
-        <h3>e. Combination Relationship</h3>
-        <p>Multiple semantic structures <span class="green">combine</span> into a new semantic whole without losing their original meaning. Conversely, they can also be decomposed. Essentially, this acts as a "semantic structure container" capable of computation.</p>
+        <h3>e. Combination Relationship<sup class="sup">Combine Structure</sup></h3>
+        <p>Multiple semantic structures combine into a new semantic whole without losing their original meaning. Conversely, they can also be decomposed. Essentially, this acts as a "semantic structure container" capable of computation.</p>
         <pre><code>
       f(A)+f(B) = f(A+B)
       f(A) = f(A+B) - f(B)
@@ -321,7 +348,7 @@
         <pre><code>plaintext(A)+space+plaintext(B) = plaintext(A+space+B)</code></pre>
         <p>This feature of <strong>lossless restoration</strong>—free combination and decomposition—gives CML semantic computation properties, not just semantic expression. It lays a solid foundation for collaborative annotation workflows.</p>
       
-        <h5>Special Constraint</h5>
+        <h4>Special Constraint</h4>
         <p>Because <code>space</code> carries the responsibility of lossless computation, expressions like <code>If User:ZhangSan how about</code>, while syntactically valid, violate the principle of lossless combination. Once split and recombined, the position shift disrupts the original meaning.</p>
       
         <h3>Operator Precedence</h3>
@@ -331,53 +358,203 @@
       </section>
 
       <section id="tab3" class="tab-pane">
-        <!-- <h2>3. Encoding Rules</h2> -->
-        <p>Based on semantic expression, two standard CML string patterns are defined. The core difference lies in the stage and form used to mark the semantic token (semantic_token) itself.</p>
-        <p><img src="./assets/image-20250421172935286.png" alt="Encoding Rules Diagram"></p>
-      
+        <p>Based on semantic expression, two standard CML string marking patterns are defined. The core difference lies in at
+          which stage and in what form the semantic token (<code>semantic_token</code>) itself is marked.</p> <img
+          src="./assets/image-20250402230135032.png" alt="CML format illustration">
         <h3>Natural Language Format</h3>
-        <p>The natural language format is designed for a <code>plain text editing</code> experience for document engineers, suitable for human-readable scenarios.</p>
-        <p>It uses the backtick marker (inline code) from <strong>Markdown syntax</strong>[15] to wrap semantic tokens (semantic_token). Document engineers can use WYSIWYG Markdown editors as a plain text editing environment for semantic structures, which is highly efficient and intuitive.</p>
+        <p>The natural language format offers a <code>plain text writing</code> experience for document engineers, suitable
+          for human-readable scenarios.</p>
+        <p>Semantic tokens (<code>semantic_token</code>) are wrapped using backticks (inline code) in Markdown syntax.
+          Document engineers can use WYSIWYG Markdown editors as a plain text editing environment for semantic structures,
+          allowing for quick and intuitive editing.</p>
         <p>For example, writing a plain text string in Markdown:</p>
-        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
-        <p>This can be rendered in real-time into the following natural semantic effect, clear at a glance:</p>
-        <p><code>token1</code>.<code>token2</code>@<code>token3</code>+<code>token4</code> <code>token5</code>:<code>token6</code></p>
-      
-        <h3>Encoding Format</h3>
-        <p>CML strings with backticks <code>`</code>, including delimiters, may introduce unexpected parsing boundaries and escaping requirements in certain special scenarios.</p>
-        <p>Therefore, for <code>embedding</code>, <code>storage</code>, <code>parsing</code>, and <code>computation</code> scenarios, CML defines a safer and more consistent encoded output format.</p>
-        <p><img src="./assets/image-20250418171524138.png" alt="Encoding Format Diagram"></p>
-        <p>Example:</p>
-        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
-        <p>The above plain text CML string is encoded in the following order:</p>
-        <ol>
-          <li>Sequentially extract <code>semantic tokens</code> and <code>relationship delimiters</code> from the original CML string.</li>
-          <li>Encode each semantic token (excluding the backticks) into a byte stream using UTF-8, then perform <strong>Base58 encoding</strong>[16] on the byte stream to generate a Base58 string.</li>
-        </ol>
-        <pre><code>
-              token1 → encode → zyvFCwFv
-              token2 → encode → zyvFCwFw
-              token3 → encode → zyvFCwFx
-              token4 → encode → zyvFCwFy
-              token5 → encode → zyvFCwFz
-              token6 → encode → zyvFCwG1
-        </code></pre>
-        <ol start="3">
-          <li>Reassemble using the original relationship delimiters (this process essentially replaces the backtick wrapping with Base58).</li>
-        </ol>
-        <pre><code>zyvFCwFv.zyvFCwFw@zyvFCwFx+zyvFCwFy zyvFCwFz:zyvFCwG1</code></pre>
-        <ol start="4">
-          <li>Finally, perform UTF-8+Base58 encoding again on the entire string to eliminate all special characters.</li>
-        </ol>
-        <pre><code>3EkzyE8r5SqnU6KSbLS98LVLJxFoNvskzaazkuEEryWminqaGwJz13YoatvfoRWoDyrofwUCQ</code></pre>
-      
-        <h3>Line Breaks and Multiple Spaces</h3>
-        <p>In natural editing, especially in long-context tagging scenarios, humans may prefer to split long strings with line breaks for readability rather than strictly using spaces. Therefore, the CML editor should support symbol equivalence, automatically converting various line break symbols like <code>\n</code>, <code>\r\n</code>, and <code>\r</code> to a <code>space</code> symbol during parsing and storage of plain text format.</p>
-        <p>Similarly, in human editing scenarios, users may want to insert multiple spaces in a single line to enhance the visual clarity of structural separation. The CML editor should also support this equivalence.</p>
-        <p>Before Base58 encoding, <code>line breaks</code> and excessive <code>spaces</code> should be explicitly eliminated and uniformly converted to a <code>single space</code> symbol.</p>
+        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6` </code></pre>
+        <p>It automatically renders into the following natural semantic effect, making it clear at a glance:</p>
+        <p><code>token1</code>.<code>token2</code>@<code>token3</code>+<code>token4</code>
+          <code>token5</code>:<code>token6</code></p>
+        <h4>Line Breaks</h4>
+        <p>In natural editing, for readability, humans tend to break long strings into multiple lines rather than using spaces
+          exclusively. Therefore, CML editors should support symbol-equivalent compatibility, automatically converting various
+          line break characters like <code>\n</code>, <code>\r\n</code>, <code>\r</code> into <code>spaces</code> during plain
+          text parsing and storage.</p>
+        <h4>Embedded Backticks</h4>
+        <p>Since backticks have no escape representation, the plain text format follows the de facto standard in the Markdown
+          ecosystem: tokens containing backticks are wrapped with more backticks. For example, the token
+          <code>console.log(`hello,${name}`)</code> should be represented as follows.</p>
+        <pre><code>```console.log(`hello,${name}`)```</code></pre>
+        <h3>Encoded Format</h3>
+        <p>CML strings with backticks (<code>`</code>), including plus signs and spaces, may cause unexpected parsing
+          boundaries and escape requirements in certain special scenarios. Other separators and internal token values may also
+          be unsafe in URLs, files, keys, or variable naming scenarios.</p>
+        <p>For example:</p>
+        <ul>
+          <li>Using backticks in template strings</li>
+          <li>Using plus signs or spaces in URLs or regular expressions</li>
+          <li>Using backticks in SQL statements or shell scripts</li>
+          <li>Nesting with HTML or other formats, especially when the original text of <code>semantic_token</code> itself
+            contains backticks</li>
+          <li>......</li>
+        </ul>
+        <p>Therefore, for <code>embedding</code>, <code>storage</code>, <code>parsing</code>, <code>computation</code>, and
+          <code>naming</code> scenarios, CML defines a safer and more consistent encoded output format.</p>
       </section>
 
       <section id="tab4" class="tab-pane">
+        <p>CML provides multiple encoding scheme options to enhance adaptability in <code>short semantic scenarios</code>,
+          <code>large-scale semantic scenarios</code>, and <code>restricted transmission scenarios</code>.</p>
+        <h3>Encoding Modes</h3>
+        <p> A CML string in any encoding format consists of two parts:
+          <code>&lt;rule_token&gt;&lt;semantic_payload&gt;</code>. The <strong>first character</strong> expresses the rule
+          version, mapping protocol, and more specific encoding mode. </p>
+        <h4>Rule Identifier</h4>
+        <p>The rule identifiers corresponding to the standard rule set are limited to the 26 lowercase letters
+          <code>a-z</code>, reserving 26 combination positions. Uppercase letters are reserved and generally not used. Numbers
+          and other special characters will never be used as identifiers to ensure they are inherently safe for keys and
+          variable names.</p>
+        <p>Currently, only 4 standard rules are defined.</p>
+        <table class="gray-table">
+          <thead>
+            <tr>
+              <th>Identifier</th>
+              <th>Protocol Version</th>
+              <th>Encoding Rule</th>
+              <th>Scenario</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>a</td>
+              <td>1.0</td>
+              <td>Double-layer Base58 encoding</td>
+              <td>Contains no special symbols, perfectly suited for short semantic scenarios</td>
+            </tr>
+            <tr>
+              <td>c</td>
+              <td>1.0</td>
+              <td>Double-layer Base64URL encoding, without <code>=</code>.</td>
+              <td>Offers maximum encoding/decoding performance for large-scale semantic scenarios</td>
+            </tr>
+            <tr>
+              <td>q</td>
+              <td>1.0</td>
+              <td>Plaintext mixed encoding mode, overall Base64URL encoding of mixed semantic payload, without <code>=</code>.
+              </td>
+              <td>Minimizes entropy increase while maintaining partial readability</td>
+            </tr>
+            <tr>
+              <td>p</td>
+              <td>1.0</td>
+              <td>Plaintext mixed mode, single-layer architecture, no overall encoding.</td>
+              <td>Minimal entropy increase, maximum information capacity, suitable for QR code and SMS scenarios</td>
+            </tr>
+          </tbody>
+        </table>
+        <h4>Mnemonic Notes</h4>
+        <ul>
+          <li>c corresponds to CPU abbreviation, focusing on CPU efficiency;</li>
+          <li>q corresponds to QR code abbreviation, intended for QR code scenarios;</li>
+          <li>p stands for plaintext;</li>
+          <li>a is reserved for Base58, as it was the earliest designed mode, with the highest security universality.</li>
+        </ul>
+        <h3>Mode a</h3>
+        <p>Mode a refers to protocol version 1.0 + double-layer Base58 encoding rule.</p>
+        <h4>Example</h4>
+        <p>The following is an encoding example of mode a.</p>
+        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
+        <p>Encoding the above plaintext CML string follows these steps:</p>
+        <ol>
+          <li>Sequentially extract <code>semantic tokens</code> and <code>relationship separators</code> from the original CML
+            string</li>
+          <li>Encode each semantic token (excluding backticks) into bytes using UTF-8, then Base58 encode the byte stream to
+            generate Base58 strings</li>
+          <li>Reassemble using the original relationship separators</li>
+        </ol>
+        <pre><code>zyvFCwFv.zyvFCwFw@zyvFCwFx+zyvFCwFy zyvFCwFz:zyvFCwG1</code></pre>
+        <ol start="4">
+          <li>Encode the entire string again with UTF-8 + Base58 to remove all special characters, obtaining the overall
+            semantic payload</li>
+        </ol>
+        <pre><code>3EkzyE8r5SqnU6KSbLS98LVLJxFoNvskzaazkuEEryWminqaGwJz13YoatvfoRWoDyrofwUCQ</code></pre>
+        <ol start="5">
+          <li>Finally, prepend the mode identifier <code>a</code> to form the final CML encoded string</li>
+        </ol>
+        <pre><code>a3EkzyE8r5SqnU6KSbLS98LVLJxFoNvskzaazkuEEryWminqaGwJz13YoatvfoRWoDyrofwUCQ</code></pre>
+        <p>The decoding process uses the first character for mode routing, restoring the original plaintext format.</p>
+        <h3>Mode c</h3>
+        <p>Mode c refers to protocol version 1.0 + double-layer Base64URL encoding rule.</p>
+        <p>The process is identical to double-layer Base58 encoding, except the encoding method is changed to Base64URL,
+          reducing the complexity from O(n² log n) to O(n).</p>
+        <table class="gray-table">
+          <thead>
+            <tr>
+              <th>Encoding Method</th>
+              <th>Input Length</th>
+              <th>Output Length</th>
+              <th>Theoretical CPU Instructions</th>
+              <th>Estimated Time</th>
+              <th>Main Bottleneck</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Base64</td>
+              <td>100KB</td>
+              <td>133.3KB</td>
+              <td>~200K</td>
+              <td><strong>0.1-0.5ms</strong></td>
+              <td>Bit operations + lookup</td>
+            </tr>
+            <tr>
+              <td>Base58</td>
+              <td>100KB</td>
+              <td>138KB</td>
+              <td>~50M</td>
+              <td><strong>50-200ms</strong></td>
+              <td>Big number division operations</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>Mode q</h3>
+        <p>Mode q refers to protocol version 1.0 + plaintext mixed encoding mode.</p>
+        <p> <code>Mode q</code> still follows a double-layer encoding architecture but minimizes unnecessary double encoding.
+          Compared to <code>mode a</code> and <code>mode c</code>, the key difference is the dynamic, automatic handling of
+          whether to encode at the token level rather than applying a uniform rule: </p>
+        <ul>
+          <li>The semantic payload supports <code>&lt;plaintextToken&gt;&lt;separator&gt;&lt;encodedToken&gt;</code> mixed
+            encoding</li>
+          <li>Plaintext is prioritized. For mixed <code>&lt;encodedToken&gt;</code>, a <code>!</code> suffix indicates to the
+            decoder that further decoding is needed.</li>
+          <li>If a token contains any CML separators (<code>@</code>, <code>.</code>, <code>+</code>, <code>:</code>,
+            <code>space</code>) or the encoding mark <code>!</code> (six characters total), it will be forcibly encoded.</li>
+          <li>Both token-level encoding and overall encoding use Base64URL.</li>
+        </ul>
+        <h4>Example</h4>
+        <p>For the original CML semantic relationship: <code>`这是明文`@`这要编码！`</code>, the plaintext string is:</p>
+        <pre><code>`这是明文`@`这要编码！`</code></pre>
+        <p>Using <code>mode c</code>, the semantic payload before overall encoding is:</p>
+        <pre><code>6L-Z5piv5piO5paH@6L-Z6KaB57yW56CB77yB</code></pre>
+        <p>Using <code>mode q</code>, the semantic payload is:</p>
+        <pre><code>这是明文@6L-Z6KaB57yW56CB77yB!</code></pre>
+        <p>Then overall encoding:</p>
+        <pre><code>6L-Z5piv5piO5paHQDZMLVo2S2FCNTd5VzU2Q0I3N3lCIQ</code></pre>
+        <p>Finally, prepend the mode identifier <code>q</code> to form the final CML encoded string:</p>
+        <pre><code>q6L-Z5piv5piO5paHQDZMLVo2S2FCNTd5VzU2Q0I3N3lCIQ</code></pre>
+        <h3>Mode p</h3>
+        <p>Mode p refers to protocol version 1.0 + plaintext mixed mode without secondary encoding.</p>
+        <p><code>Mode p</code> is a simplified version of <code>mode q</code>, removing the double-layer encoding architecture
+          to minimize entropy.</p>
+        <h4>Same Example</h4>
+        <p>For the original CML semantic relationship: <code>`这是明文`@`这要编码！`</code></p>
+        <p>The plaintext string is:</p>
+        <pre><code>`这是明文`@`这要编码！`</code></pre>
+        <p>Whether using mode p or q, the semantic payload after encoding is:</p>
+        <pre><code>这是明文@6L-Z6KaB57yW56CB77yB!</code></pre>
+        <p>However, mode p does not perform overall encoding, simply prepends the prefix to form the final CML encoded string:
+        </p>
+        <pre><code>p这是明文@6L-Z6KaB57yW56CB77yB!</code></pre>
+      </section>
+
+      <section id="tab5" class="tab-pane">
         <!-- <h2>4. Minimal Completeness</h2> -->
         <p>The five relationship delimiters are derived from an abstract refinement of the semantic expression structures in natural language, as well as a deep consideration of expression ambiguity and structural controllability.</p>
       
@@ -452,3 +629,50 @@
   <!-- <script src="https://cdn.jsdelivr.net/npm/prismjs@1.29.0/prism.min.js"></script> -->
 </body>
 </html>
+
+<!-- 
+<section id="tab3" class="tab-pane">
+        <p>Based on semantic expression, two standard CML string patterns are defined. The core difference lies in the stage and form used to mark the semantic token (semantic_token) itself.</p>
+        <p><img src="./assets/image-20250421172935286.png" alt="Encoding Rules Diagram"></p>
+      
+        <h3>Natural Language Format</h3>
+        <p>The natural language format is designed for a <code>plain text editing</code> experience for document engineers, suitable for human-readable scenarios.</p>
+        <p>It uses the backtick marker (inline code) from <strong>Markdown syntax</strong>[15] to wrap semantic tokens (semantic_token). Document engineers can use WYSIWYG Markdown editors as a plain text editing environment for semantic structures, which is highly efficient and intuitive.</p>
+        <p>For example, writing a plain text string in Markdown:</p>
+        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
+        <p>This can be rendered in real-time into the following natural semantic effect, clear at a glance:</p>
+        <p><code>token1</code>.<code>token2</code>@<code>token3</code>+<code>token4</code> <code>token5</code>:<code>token6</code></p>
+      
+        <h3>Encoding Format</h3>
+        <p>CML strings with backticks <code>`</code>, including delimiters, may introduce unexpected parsing boundaries and escaping requirements in certain special scenarios.</p>
+        <p>Therefore, for <code>embedding</code>, <code>storage</code>, <code>parsing</code>, and <code>computation</code> scenarios, CML defines a safer and more consistent encoded output format.</p>
+        <p><img src="./assets/image-20250418171524138.png" alt="Encoding Format Diagram"></p>
+        <p>Example:</p>
+        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
+        <p>The above plain text CML string is encoded in the following order:</p>
+        <ol>
+          <li>Sequentially extract <code>semantic tokens</code> and <code>relationship delimiters</code> from the original CML string.</li>
+          <li>Encode each semantic token (excluding the backticks) into a byte stream using UTF-8, then perform <strong>Base58 encoding</strong>[16] on the byte stream to generate a Base58 string.</li>
+        </ol>
+        <pre><code>
+              token1 → encode → zyvFCwFv
+              token2 → encode → zyvFCwFw
+              token3 → encode → zyvFCwFx
+              token4 → encode → zyvFCwFy
+              token5 → encode → zyvFCwFz
+              token6 → encode → zyvFCwG1
+        </code></pre>
+        <ol start="3">
+          <li>Reassemble using the original relationship delimiters (this process essentially replaces the backtick wrapping with Base58).</li>
+        </ol>
+        <pre><code>zyvFCwFv.zyvFCwFw@zyvFCwFx+zyvFCwFy zyvFCwFz:zyvFCwG1</code></pre>
+        <ol start="4">
+          <li>Finally, perform UTF-8+Base58 encoding again on the entire string to eliminate all special characters.</li>
+        </ol>
+        <pre><code>3EkzyE8r5SqnU6KSbLS98LVLJxFoNvskzaazkuEEryWminqaGwJz13YoatvfoRWoDyrofwUCQ</code></pre>
+      
+        <h3>Line Breaks and Multiple Spaces</h3>
+        <p>In natural editing, especially in long-context tagging scenarios, humans may prefer to split long strings with line breaks for readability rather than strictly using spaces. Therefore, the CML editor should support symbol equivalence, automatically converting various line break symbols like <code>\n</code>, <code>\r\n</code>, and <code>\r</code> to a <code>space</code> symbol during parsing and storage of plain text format.</p>
+        <p>Similarly, in human editing scenarios, users may want to insert multiple spaces in a single line to enhance the visual clarity of structural separation. The CML editor should also support this equivalence.</p>
+        <p>Before Base58 encoding, <code>line breaks</code> and excessive <code>spaces</code> should be explicitly eliminated and uniformly converted to a <code>single space</code> symbol.</p>
+      </section> -->

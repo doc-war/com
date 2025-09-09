@@ -39,6 +39,17 @@
     h1{
       font-size:48px;
     }
+    h2{
+      font-size:36px;
+    }
+    h3{
+      font-size:24px;
+      color:#ff8822;
+    }
+    h4{
+      color:#a2e8ff;
+    }
+
 
     img{
       max-width: 100%; /* 图片最大宽度不超过容器 */
@@ -135,6 +146,10 @@
     .red{
       color:red;
     }
+    .sup{
+      font-size:13px;
+      color:white;
+    }
     .blue{
       color:blue;
     }
@@ -152,7 +167,7 @@
     #tabs li {
       padding: 10px 20px;
       cursor: pointer;
-      font-size:20px;
+      font-size:24px;
       border-bottom: none;
       margin-right: 5px;
 
@@ -172,6 +187,18 @@
     .tab-pane.active {
       display: block;
     }
+    .gray-table {
+      width: 100%;
+      border-collapse: collapse;
+      border: 1px solid #ccc;
+    }
+    .gray-table th,
+    .gray-table td {
+      border: 1px solid #ccc;
+      padding: 6px 8px;
+      text-align: left;
+    }
+
   </style>
 </head>
 
@@ -218,6 +245,7 @@
         <h1>CML</h1>
         <p>Context Mark Language（简称CML），面向AI时代的上下文标记需要，提供符合自然语义的全新标记架构。</p>
         <p>Context Mark Language标记语法的核心特征，是用单字符串表示多维度、可组合、隐含上下文关系的语义性标记结构，提供更简单的编写、嵌入、传输、存储、运算体验。</p>
+        <p>最新版本: 1.0.0-beta.1</p>
         <h2>论文</h2>
         <p>CML阐释了Context Structure Expression模型。论文详见：</p>
         <ul>
@@ -235,11 +263,12 @@
       <ul id="tabs">
         <li class="active" data-tab="tab1">语义架构</li>
         <li data-tab="tab2">语义结构</li>
-        <li data-tab="tab3">编码规则</li>
-        <li data-tab="tab4">最小完备性</li>
+        <li data-tab="tab3">标记格式</li>
+        <li data-tab="tab4">编码规则</li>
+        <li data-tab="tab5">最小完备性</li>
       </ul>
+      <!-- <h2>一、语义架构</h2> -->
       <section id="tab1" class="tab-pane active">
-        <!-- <h2>一、语义架构</h2> -->
         <p>Context Mark Language能极简的表达语义化的上下文结构。</p>
         <p>用于标记知识上下文的CML字符串，是由一系列的<code>语义Token</code>+<code>关系分割符</code>两个<code>语义基元</code>类型构成。</p>
         <ul>
@@ -256,14 +285,13 @@
           <li>语义Token和关系分隔符总是交替出现，<code>&lt;semantic_token&gt;&lt;separator&gt;&lt;semantic_token&gt;&lt;separator&gt;......&lt;semantic_token&gt;</code>。</li>
         </ol>
       </section>
-      
+      <!-- <h2>二、语义结构</h2> -->
       <section id="tab2" class="tab-pane">
-        <!-- <h2>二、语义结构</h2> -->
         <p>CML围绕Token的<strong>优先级表达</strong>、<strong>结构可扩展</strong>、<strong>逻辑可正交</strong>三个核心需求维度，抽象出的具有高度表达力与组合力的5个语义结构基元，作为构建一切逻辑语义关系的基础单位。</p>
         <p>这5种结构基元，分<code>基本结构</code>和<code>复合结构</code>、<code>组合结构</code>三大类，基本结构描述多个基元语义Token之间的简单结构关系，同时可作为复合结构的组成单元，而组合结构是更宏观的容器类型，可以连接任意语义Token、基本结构和复合结构。</p>
       
-        <h3>a、补充关系</h3>
-        <p><span class="red">基本结构</span>。右边语义对象对左边语义对象的补充说明或解释、限制，通常是语义附加，不改变原语义结构</p>
+        <h3>a、补充关系<sup class="sup">（基本结构）</sup></h3>
+        <p>右边语义对象对左边语义对象的补充说明或解释、限制，通常是语义附加，不改变原语义结构</p>
         <pre><code>f:A∋B∋C</code></pre>
         <p>以符号@来表达，越靠左优先级越高，表示权重应该更高。</p>
         <p>比如</p>
@@ -273,8 +301,8 @@
         </ul>
         <p>两组标记的权重优先级声明是不同的，都重点都是先强调姓名。</p>
       
-        <h3>b、线性递进关系</h3>
-        <p><span class="red">基本结构</span>。一种有序的、逐步推进的语义关系，可以表达各种带方向的轨迹：递进、流向、变换链、指向链、顺序、因果、类型细化、生命周期......</p>
+        <h3>b、线性递进关系<sup class="sup">（基本结构）</sup></h3>
+        <p>一种有序的、逐步推进的语义关系，可以表达各种带方向的轨迹：递进、流向、变换链、指向链、顺序、因果、类型细化、生命周期......</p>
         <pre><code>f:A→B→C</code></pre>
         <p>用符号<code>.</code>表达，左侧权重是否应该略高于右侧，需要LLM可以结合实际语义token来最终判断权重优先级。</p>
         <p>比如</p>
@@ -283,8 +311,8 @@
           <li><code>产品设计</code>.<code>开发</code>.<code>运营</code>，结合语义token本身，可以很清楚的判定他描述了一个生命周期语义。</li>
         </ul>
       
-        <h3>c、并列集合关系</h3>
-        <p><span class="red">基本结构</span>。多个语义并列，类似集合、对象属性集、多分支描述，无优先级或顺序，可以互调位置。</p>
+        <h3>c、并列集合关系<sup class="sup">（基本结构）</sup></h3>
+        <p>多个语义并列，类似集合、对象属性集、多分支描述，无优先级或顺序，可以互调位置。</p>
         <pre><code>f:{A, B, C}</code></pre>
         <p>用符号<code>+</code>表达，权重不分主次先后。</p>
         <p>比如</p>
@@ -293,8 +321,8 @@
           <li><code>姓名</code>+<code>年龄</code>+<code>username</code>，都是某个账号的注册信息。</li>
         </ul>
       
-        <h3>d、映射关系</h3>
-        <p>一种语义结构到另一种语义结构的<span class="blue">复合</span>对照，k-v形式，两边都可以使用3种基本关系的自由组合，用于支持二维语义表达</p>
+        <h3>d、映射关系<sup class="sup">（复合结构）</sup></h3>
+        <p>一种语义结构到另一种语义结构的复合对照，k-v形式，两边都可以使用3种基本关系的自由组合，用于支持二维语义表达</p>
         <pre><code>f(A,B) ↦ f(C,D,E)</code></pre>
         <p>用符号<code>:</code>表示。类似于键值对，但构造更自由，无论是key还是value部分，都可以使用基本结构，而不仅仅是基元语义token。</p>
         <pre><code>&lt;key-context-struct&gt;:&lt;value-context-struct&gt;</code></pre>
@@ -306,11 +334,11 @@
           <li><code>ask</code>.<code>answer</code>: <code>请介绍CML语言?</code>.<code>CML语言是符合自然语义的语义结构语言</code></li>
         </ul>
       
-        <h5>特别约束</h5>
+        <h4>特别约束</h4>
         <p>CML<strong>不支持嵌套映射</strong>，避免带来语义结构本身的解析复杂度。比如<code>用户:张三:删除+查询</code>之类的表达，在格式上是非法的。</p>
       
-        <h3>e、组合关系</h3>
-        <p>多个语义结构<span class="green">组合</span>形成新的语义整体，而不损失其原语义，反之拆分亦然，本质上是一种可运算的“关系结构容器”。</p>
+        <h3>e、组合关系<sup class="sup">（组合结构）</sup></h3>
+        <p>多个语义结构组合形成新的语义整体，而不损失其原语义，反之拆分亦然，本质上是一种可运算的“关系结构容器”。</p>
         <pre><code>
       f(A)+f(B) =f(A+B)
       f(A) =f(A+B) - f(B)
@@ -320,7 +348,7 @@
         <pre><code>plaintext(A)+space+plaintext(B) = plaintext(A+space+B)</code></pre>
         <p>这种可自由拆分—&gt;还原的<strong>无损还原</strong>特征，让CML字符串具备语义运算特征，而不仅仅是语义表达，为标记工作分工协同提供了坚实基础。</p>
       
-        <h5>特别约束</h5>
+        <h4>特别约束</h4>
         <p>由于<code>空格</code>承担了语义上的无损运算职责，比如<code>如果 用户:张三怎么样</code>之类的用法，虽然在格式上是合法的，但一定会破坏无损组合原则，当多个语义字符串被拆分重组之后，会因为位置不同而颠覆原有语义。</p>
       
         <h3>运算优先级</h3>
@@ -328,57 +356,183 @@
         <p>CML定义了明确的优先级，以确保在标记、推理阶段对语义解释的一致性。</p>
         <pre><code>补充关系<sup>a</sup> &gt; 线性递进关系<sup>b</sup> &gt; 并列集合关系<sup>c</sup> &gt; 映射关系<sup>d</sup> &gt; 组合关系<sup>e</sup></code></pre>
       </section>
-      
-      <section id="tab3" class="tab-pane">
-        <!-- <h2>三、编码规则</h3> -->
-        <p>在语义表达的基础上，定义了2种标准的CML字符串模式。核心区别是，在什么阶段，用什么形式，来标记语义Token（semantic_token）本身。</p>
-        <p><img src="./assets/image-20250402230135032.png" alt="编码规则图示"></p>
-      
+      <!-- <h2>三、CML格式</h2> -->
+      <section id="tab3" class="tab-pane"> 
+        <p>在语义表达的基础上，定义了2种标准的CML字符串标记模式。核心区别是，在什么阶段，用什么形式，来标记语义Token（semantic_token）本身。</p> <img
+          src="./assets/image-20250402230135032.png" alt="CML格式示意图">
         <h3>自然语言格式</h3>
         <p>自然语言格式，面向文档工程师的<code>明文编写</code>体验，适用于人类可读场景。</p>
-        <p>以<strong>markdown语法</strong>[15]中的反引号标记（inline code），来包裹语义Token（semantic_token）。文档工程师，可以使用所见即所得的markdown编辑器，作为语义结构的明文编辑环境，可以非常快捷、直观。</p>
+        <p>以markdown语法中的反引号标记（inline code），来包裹语义Token（semantic_token）。文档工程师，可以使用所见即所得的markdown编辑器，作为语义结构的明文编辑环境，可以非常快捷、直观。</p>
         <p>比如，用markdown编写明文字符串：</p>
-        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
-        <p>可实时渲染成下面的自然语义效果，一目了然：</p>
-        <p><code>token1</code>.<code>token2</code>@<code>token3</code>+<code>token4</code> <code>token5</code>:<code>token6</code></p>
-      
+        <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6` </code></pre>
+        <p>自动实时渲染成下面的自然语义效果，一目了然：</p>
+        <p><code>token1</code>.<code>token2</code>@<code>token3</code>+<code>token4</code>
+          <code>token5</code>:<code>token6</code></p>
+        <h4>换行问题</h4>
+        <p>在自然编辑中，从可读性角度，人类倾向于对长字符串进行换行分割，而不是坚持使用空格来分割。因此，CML编辑器应该支持符号等价兼容，在明文解析和存储时，将
+          <code>\n</code>、<code>\r\n</code>、<code>\r</code> 等各种换行符号，自动改成 <code>空格</code>。</p>
+        <h4>内嵌反引号问题</h4>
+        <p>由于反引号没有转义表示，明文格式遵循Markdown生态的事实性标准方案：对于内部带有反引号的Token，用更多的反引号来包裹Token。如标记 <code>console.log(`hello,${name}`)</code>
+          需要用下面的方式来实现。</p>
+        <pre><code>```console.log(`hello,${name}`)```</code></pre>
         <h3>编码格式</h3>
-        <p>带反引号<code>`</code>的CML字符串，包括分割符号，在某些特殊场景下，可能会带来偏离预期的解析边界和转义要求。</p>
-        <p>因此，面向<code>嵌入</code>、<code>存储</code>、<code>解析</code>、<code>运算</code>场景，CML定义了更安全一致的编码输出格式。</p>
-        <p><img src="./assets/image-20250409231615178.png" alt="编码格式图示"></p>
-        <p>示例</p>
+        <p>带反引号<code>`</code>的CML字符串，包括+号、空格，在某些特殊场景下，可能会带来偏离预期的解析边界和转义要求。而其他分隔符和内部的Token值，也可能在URL、文件、key、变量命名场景具有不安全性。</p>
+        <p>比如：</p>
+        <ul>
+          <li>在模版字符串中使用反引号</li>
+          <li>在URL、正则中使用+号、空格</li>
+          <li>在sql语句、shell脚本中使用反引号</li>
+          <li>和html或其他格式的嵌套，尤其是semantic_token文本原文本身也含有反引号自身时</li>
+          <li>......</li>
+        </ul>
+        <p>因此，面向<code>嵌入</code>、<code>存储</code>、<code>解析</code>、<code>运算</code>、<code>命名</code>场景，CML定义了更安全一致的编码输出格式。</p>
+      </section>
+      <!-- <h2>四、编码规则</h2> -->
+      <section id="tab4" class="tab-pane"> 
+        <p>CML提供多种模式的编码方案可选，以增强在<code>短语义场景</code>、<code>大规模语义场景</code>和<code>传输限制场景</code>的适应性。</p>
+        <h3>编码模式</h3>
+        <p>
+          一个编码格式的CML字符串，无论何种编码，均由两部组成：<code>&lt;rule_token&gt;&lt;semantic_payload&gt;</code>。由<strong>首位</strong>负责表达规则版本，映射协议及更具体的编码模式。
+        </p>
+        <h4>规则标识</h4>
+        <p>标准规则集所对应的规则标识符，仅限于<code>a-z</code>26个小写字母，即预留了26种组合位置，大写作为极端保留范围冻结，正常不会启用。未来100%不会使用数字和其他特殊字符来做标识符，以确保天然可以安全用于key、变量场景。</p>
+        <p>当前只定义了4种标准规则。</p>
+        <table class="gray-table">
+          <thead>
+            <tr>
+              <th>标识</th>
+              <th>协议版本</th>
+              <th>编码规则</th>
+              <th>场景</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>a</td>
+              <td>1.0</td>
+              <td>双层Base58编码</td>
+              <td>不包含任何特殊符号，在短语义场景具有完美的适应性</td>
+            </tr>
+            <tr>
+              <td>c</td>
+              <td>1.0</td>
+              <td>双层Base64URL编码，无<code>=</code>号。</td>
+              <td>提供最大的编解码性能，大规模语义场景</td>
+            </tr>
+            <tr>
+              <td>q</td>
+              <td>1.0</td>
+              <td>明文混编编码模式，对混编的语义荷载进行一次整体的Base64URL编码，无<code>=</code>号。</td>
+              <td>在兼顾不可读的基础上，追求最小熵增</td>
+            </tr>
+            <tr>
+              <td>p</td>
+              <td>1.0</td>
+              <td>明文混编模式，单层架构，不再整体编码。</td>
+              <td>最小熵增，最大的信息容量，面向二维码、短信场景</td>
+            </tr>
+          </tbody>
+        </table>
+        <h4>助记说明</h4>
+        <ul>
+          <li>c对应cpu缩写，追求cpu友好；</li>
+          <li>q对应qrcode缩写，取意面向二维码场景；</li>
+          <li>p是plaintext的缩写，取意明文；</li>
+          <li>a则留给了Base58，因为这是最早设计的模式，具有最高的安全普适性。</li>
+        </ul>
+        <h3>a模式</h3>
+        <p>a模式，指1.0标记协议+双层Base58编码规则。</p>
+        <h4>示例</h4>
+        <p>以下是a模式的编码示例。</p>
         <pre><code>`token1`.`token2`@`token3`+`token4` `token5`:`token6`</code></pre>
         <p>将以上明文CML字符串按如下顺序编码：</p>
         <ol>
           <li>从CML字符串原文中顺序提取<code>语义Token</code>和<code>关系分隔符</code></li>
-          <li>先将每一个语义Token原文（不包括反引号的token字符串），使用UTF-8编码成字节流，再对字节流进行<strong>Base58编码</strong>[16]，生成Base58字符串</li>
-        </ol>
-        <pre><code>
-              token1 → 编码 → zyvFCwFv
-              token2 → 编码 → zyvFCwFw
-              token3 → 编码 → zyvFCwFx
-              token4 → 编码 → zyvFCwFy
-              token5 → 编码 → zyvFCwFz
-              token6 → 编码 → zyvFCwG1
-        </code></pre>
-        <ol start="3">
-          <li>再用关系分隔符原文重新拼接（这个过程的本质是用base58代替反引号的包裹作用）</li>
+          <li>先将每一个语义Token原文（不包括反引号的token字符串），使用UTF-8编码成字节流，再对字节流进行Base58编码，生成Base58字符串</li>
+          <li>再用关系分隔符原文重新拼接</li>
         </ol>
         <pre><code>zyvFCwFv.zyvFCwFw@zyvFCwFx+zyvFCwFy zyvFCwFz:zyvFCwG1</code></pre>
         <ol start="4">
-          <li>最后，再次用UTF-8+Base58进行整体编码，消除一切特殊字符</li>
+          <li>再次用UTF-8+Base58进行整体编码，消除一切特殊字符，拿到整体语义荷载</li>
         </ol>
         <pre><code>3EkzyE8r5SqnU6KSbLS98LVLJxFoNvskzaazkuEEryWminqaGwJz13YoatvfoRWoDyrofwUCQ</code></pre>
-      
-        <h3>换行和多空格问题</h3>
-        <p>在自然编辑中，尤其是长上下文标记场景下，从可读性角度，人类可能倾向于对长字符串进行换行分割，而不是坚持使用空格来分割。因此，CML编辑器应该支持符号等价兼容，在明文格式的解析和存储时，将<code>\n</code>、<code>\r\n</code>、<code>\r</code>等各种可能的换行符号，自动改成<code>空格</code>符号。</p>
-        <p>同理，人类编写场景中，在同一行中，可能希望连续敲击多个空格，以提升结构拆分的直观性，CML编辑器也应该支持等价兼容。</p>
-        <p>在进行base58编码前，应该明确消除<code>换行符</code>和多余的<code>空格</code>，统一换成<code>单空格</code>符号。</p>
+        <ol start="5">
+          <li>最后，拼接首位模式标识符<code>a</code>，构成最终的CML编码字符串</li>
+        </ol>
+        <pre><code>a3EkzyE8r5SqnU6KSbLS98LVLJxFoNvskzaazkuEEryWminqaGwJz13YoatvfoRWoDyrofwUCQ</code></pre>
+        <p>解码环节基于首位进行模式路由，反向还原到原始明文格式。</p>
+        <h3>c模式</h3>
+        <p>c模式，指1.0标记协议+双层Base64URL编码规则。</p>
+        <p>与双层Base58编码的流程完全一致，只是将编码方式改成Base64URL，将原来O(n²log n)的编解码复杂度降低到O(n)。</p>
+        <table class="gray-table">
+          <thead>
+            <tr>
+              <th>编码方式</th>
+              <th>输入长度</th>
+              <th>输出长度</th>
+              <th>理论CPU指令</th>
+              <th>估计耗时</th>
+              <th>主要瓶颈</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Base64</td>
+              <td>100KB</td>
+              <td>133.3KB</td>
+              <td>~200K条</td>
+              <td><strong>0.1-0.5ms</strong></td>
+              <td>位运算+查表</td>
+            </tr>
+            <tr>
+              <td>Base58</td>
+              <td>100KB</td>
+              <td>138KB</td>
+              <td>~50M条</td>
+              <td><strong>50-200ms</strong></td>
+              <td>大数除法运算</td>
+            </tr>
+          </tbody>
+        </table>
+        <h3>q模式</h3>
+        <p>q模式，指1.0标记协议+明文混编编码模式。</p>
+        <p>
+          <code>q模式</code>依然遵循双层编码架构，但最大限度的减少不必要的双层编码，相比<code>a模式</code>、<code>c模式</code>，核心差异在于对token层是否编码采取动态、自动处理规则，而不是一刀切：
+        </p>
+        <ul>
+          <li>语义荷载内部支持<code>&lt;plaintextToken&gt;&lt;separator&gt;&lt;encodedToken&gt;</code>混编</li>
+          <li>明文优先，对于混编进来的<code>&lt;encodedToken&gt;</code>，使用编码标识符<code>!</code>进行尾部修饰，告诉解码器这不是明文，需要进一步解码。</li>
+          <li>
+            如果一个Token内部包含任何cml分隔符（<code>@</code>、<code>.</code>、<code>+</code>、<code>:</code>、<code>空格</code>）和编码标识<code>!</code>6种字符，将被强制编码。
+          </li>
+          <li>无论是Token层编码，还是外围的整体编码，均采用base64URL。</li>
+        </ul>
+        <h4>示例</h4>
+        <p>对于原始的CML关系语义：<code>`这是明文`@`这要编码！`</code>，明文字符串如下：</p>
+        <pre><code>`这是明文`@`这要编码！`</code></pre>
+        <p>如果采用<code>c模式</code>编码，则在整体编码前，拼接出来的语义荷载是这样：</p>
+        <pre><code>6L-Z5piv5piO5paH@6L-Z6KaB57yW56CB77yB</code></pre>
+        <p>而采用<code>q模式</code>编码，则拼接出来的语义荷载是这样：</p>
+        <pre><code>这是明文@6L-Z6KaB57yW56CB77yB!</code></pre>
+        <p>再整体编码：</p>
+        <pre><code>6L-Z5piv5piO5paHQDZMLVo2S2FCNTd5VzU2Q0I3N3lCIQ</code></pre>
+        <p>最后前缀附加模式标识q，构成最终的CML编码格式字符串：</p>
+        <pre><code>q6L-Z5piv5piO5paHQDZMLVo2S2FCNTd5VzU2Q0I3N3lCIQ</code></pre>
+        <h3>p模式</h3>
+        <p>p模式，指1.0标记协议+不二次编码的明文混编模式。</p>
+        <p><code>p模式</code>，是<code>q模式</code>的简化版本，剔除了双层编码架构，以最大限度的减熵。</p>
+        <h4>同一个示例</h4>
+        <p>对于原始的CML关系语义：<code>`这是明文`@`这要编码！`</code></p>
+        <p>明文字符串如下：</p>
+        <pre><code>`这是明文`@`这要编码！`</code></pre>
+        <p>无论采用p模式还是q模式，编码后拼接出来的语义荷载都是这样：</p>
+        <pre><code>这是明文@6L-Z6KaB57yW56CB77yB!</code></pre>
+        <p>但p模式不再对语义荷载整体编码，而是直接附加前缀，构成最终的CML编码格式字符串：</p>
+        <pre><code>p这是明文@6L-Z6KaB57yW56CB77yB!</code></pre>
       </section>
-      <section id="tab4" class="tab-pane">
-        <!-- <h2>四、最小完备性</h2> -->
+      <!-- <h2>四、最小完备性</h2> -->
+      <section id="tab5" class="tab-pane">
         <p>五种关系分隔符，源自对自然语言的语义表达结构的抽象提炼，亦是对表达歧义与结构可控性问题的深入思考。</p>
-      
         <h3>自然语言参考</h3>
         <p>CML定义的5种关系分隔符，参考的是自然语言中隐含的最基本的语义结构（<strong>修饰</strong>、<strong>顺承</strong>、<strong>并列</strong>、<strong>对照</strong>、<strong>组合</strong>）。这五种语义结构，与中英法日等具体自然语言的语法表达风格无关。</p>
         <pre><code>
