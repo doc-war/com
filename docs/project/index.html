@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>.project - 通用项目入口协议 Project Entry Protocol</title>
+
+    <meta name="description" content="一种跨语言、跨工具的项目声明、发现与执行协议，通过 .project 文件统一项目启动入口。">
+
+    <meta name="robots" content="index,follow">
+
+    <link rel="canonical" href="https://github.io/doc-war/project">
+
+    <!-- Open Graph：用于引用与传播的一致性 -->
+    <meta property="og:type" content="article">
+    <meta property="og:title" content=".project - 通用项目入口协议 Project Entry Protocol">
+    <meta property="og:description" content="通过 .project 文件定义逻辑项目入口，实现跨语言、跨工具的统一项目启动，解决多项目来回文件夹路径繁琐切换的最优方案，干净轻量，离散维护，中心化管理。">
+    <meta property="og:url" content="https://doc-war/projectentryprotocol">
+    <meta property="og:site_name" content="Project Protocol">
+
+    <!-- 协议/规范的机器可理解声明 -->
+    <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+
+  "headline": ".project 通用项目入口协议",
+  "alternativeHeadline": "Universal Project Launch Protocol",
+
+  "description": "一种跨语言、跨工具的逻辑项目声明、发现与执行协议，通过 .project 文件统一项目启动入口。",
+
+  "inLanguage": "zh-CN",
+
+  "about": [
+    {
+      "@type": "Thing",
+      "name": "项目发现、启动、执行协议"
+    },
+    {
+      "@type": "Thing",
+      "name": "CLI 工具"
+    },
+    {
+      "@type": "Thing",
+      "name": "开发效率"
+    }
+  ],
+
+  "genre": [
+    "Technical Specification",
+    "Developer Protocol"
+  ],
+
+  "keywords": [
+    "project",
+    "项目启动",
+    "CLI",
+    "开发规范",
+    "协议",
+    ".project文件",
+    ".project格式"
+  ],
+
+  "isAccessibleForFree": true,
+
+  "author": {
+    "@type": "Person",
+    "name": "赵立伟"
+  },
+
+  "publisher": {
+    "@type": "Organization",
+    "name": "doc-war"
+  },
+
+  "mainEntity": {
+    "@type": "SoftwareApplication",
+    "name": "Project CLI",
+    "applicationCategory": "DeveloperTool",
+    "operatingSystem": "Windows, macOS, Linux",
+    "programmingLanguage": [
+      "Go",
+      "Rust",
+      "JS",
+      "Shell"
+    ]
+  },
+
+  "datePublished": "2026-01-23",
+  "dateModified": "2026-01-30",
+
+  "license": "https://opensource.org/licenses/MIT"
+}
+</script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fff;
+        }
+
+        /* 布局容器 */
+        .container {
+            display: flex;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* 模拟文件树侧边栏 */
+        .sidebar {
+            width: 280px;
+            padding: 3rem 1.5rem;
+            position: sticky;
+            top: 0;
+            height: 100vh;
+            overflow-y: auto;
+            border-right: 1px solid #eee;
+            background: #fff;
+        }
+
+        .tree-root {
+            font-weight: bold;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+        }
+
+        .tree-root::before {
+            content: "📂 ";
+            font-weight: normal;
+        }
+
+        .sidebar ul {
+            list-style: none;
+            position: relative;
+        }
+
+        .sidebar ul ul {
+            margin-left: 1.2rem;
+            border-left: 1px dashed #ccc;
+            /* 树枝线 */
+        }
+
+        .sidebar li {
+            position: relative;
+            padding: 0.2rem 0 0.2rem 1rem;
+        }
+
+        .sidebar li::before {
+            content: "";
+            position: absolute;
+            left: 0;
+            top: 0.8rem;
+            width: 0.8rem;
+            border-top: 1px dashed #ccc;
+        }
+
+        .sidebar a {
+            color: #555;
+            text-decoration: none;
+            font-size: 0.9rem;
+            transition: color 0.2s;
+            display: inline-block;
+        }
+
+        .sidebar a:hover {
+            color: #667eea;
+        }
+
+        .sidebar a.active {
+            color: #667eea;
+            font-weight: 600;
+        }
+
+        .folder::after {
+            content: "/";
+            opacity: 0.5;
+        }
+
+        /* 侧边栏底部信息 (原 Footer 内容) */
+        .sidebar-footer {
+            margin-top: 2rem;
+            padding-top: 1.5rem;
+            border-top: 1px solid #f0f0f0;
+            font-size: 0.85rem;
+            color: #999;
+        }
+
+        .sidebar-footer a {
+            color: #666;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 5px;
+        }
+
+        .sidebar-footer a:hover {
+            color: #667eea;
+        }
+
+        .github-icon {
+            width: 20px;
+            height: 20px;
+            fill: currentColor;
+            vertical-align: middle;
+        }
+
+        /* 主内容区 */
+        main {
+            flex: 1;
+            padding: 3rem 4rem;
+            max-width: 900px;
+        }
+
+        section {
+            margin-bottom: 5rem;
+        }
+
+        h2 {
+            font-size: 1.8rem;
+            color: #2c3e50;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        h3 {
+            margin: 2rem 0 1rem;
+            color: #34495e;
+        }
+
+        /* 极简 Hero 区域 */
+        .hero {
+            padding-bottom: 3rem;
+            border-bottom: 2px solid #f0f0f0;
+            margin-bottom: 3rem;
+        }
+
+        .hero h1 {
+            font-size: 3.5rem;
+            font-weight: 700;
+            color: #2c3e50;
+            margin-bottom: 0.5rem;
+        }
+
+        .hero p {
+            font-size: 1.2rem;
+            color: #666;
+            margin-bottom: 2rem;
+        }
+
+        /* 黑色 Demo 演示区 */
+        .quick-demo {
+            background: #1a1a1a;
+            color: #a6accd;
+            padding: 1.5rem;
+            border-radius: 8px;
+            font-family: "Fira Code", "Consolas", monospace;
+            line-height: 1.8;
+            font-size: 0.95rem;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+        }
+
+        .quick-demo .arrow {
+            color: #667eea;
+            margin: 0 10px;
+        }
+
+        .quick-demo .comment {
+            color: #676e95;
+            font-style: italic;
+        }
+
+        /* 代码块 */
+        pre {
+            background: #f8f9fa;
+            padding: 1.6rem;
+            border-radius: 6px;
+            overflow-x: auto;
+            border: 1px solid #eee;
+            margin: 1rem 0;
+        }
+
+        /* 仅作用于 inline code */
+        :not(pre)>code {
+            font-family: 'Monaco', 'Menlo', monospace;
+            font-size: 1rem;
+            color: #ea5708;
+
+            background-color: rgba(234, 87, 8, 0.08);
+            padding: 0.15em 0.35em;
+            border-radius: 4px;
+
+            box-decoration-break: clone;
+            -webkit-box-decoration-break: clone;
+        }
+
+
+        pre code {
+            color: #333;
+            font-size: 1rem;
+        }
+
+        /* 特性网格 */
+        .feature-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .feature-item {
+            padding: 1.2rem;
+            border: 1px solid #eee;
+            border-radius: 8px;
+            transition: border-color 0.3s;
+        }
+
+        .feature-item:hover {
+            border-color: #667eea;
+        }
+
+        .feature-item strong {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #667eea;
+        }
+
+        /* 表格 */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1rem 0;
+        }
+
+        table th,
+        table td {
+            padding: 0.8rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        table th {
+            background: #fafafa;
+            font-weight: 600;
+        }
+
+        footer {
+            padding: 4rem 0;
+            color: #999;
+            font-size: 0.85rem;
+            border-top: 1px solid #eee;
+            margin-top: 4rem;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                width: 100%;
+                height: auto;
+                position: relative;
+                border-right: none;
+                border-bottom: 1px solid #eee;
+            }
+
+            main {
+                padding: 2rem 1.5rem;
+            }
+
+            .hero h1 {
+                font-size: 2.5rem;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+        <aside class="sidebar">
+            <div class="tree-root">.project协议文档</div>
+            <nav>
+                <ul>
+                    <li><a href="#home" class="nav-link">体验.md</a></li>
+                    <li><a href="#what-why" class="nav-link">为什么需要?</a></li>
+                    <li class="folder">
+                        <a href="#specification" class="nav-link">协议规范<sup>(v1.0.0)</sup></a>
+                        <ul>
+                            <li><a href="#project-discovery" class="nav-link">发现规则</a></li>
+                            <li><a href="#project-naming" class="nav-link">命名规则</a></li>
+                            <li><a href="#file-format" class="nav-link">文件格式</a></li>
+                            <li><a href="#core-properties" class="nav-link">核心属性</a></li>
+                            <li><a href="#extend-properties" class="nav-link">命名规则</a></li>
+
+                        </ul>
+                    </li>
+                    <li><a href="#implementations" class="nav-link">官方实现（下载）</a></li>
+                </ul>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="https://github.com/doc-war/project" target="_blank">
+                    <svg class="github-icon" viewBox="0 0 16 16">
+                        <path
+                            d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
+                        </path>
+                    </svg>
+                    GitHub 仓库
+                </a>
+                <p>版本: v1.0.0</p>
+                <p>协议: MIT License</p>
+                <p>© 2026 Project Protocol</p>
+            </div>
+        </aside>
+
+        <main>
+            <section id="home" class="hero">
+                <h1>通用项目入口协议-Project Entry Protocol</h1>
+                <p>定义一种跨语言、跨工具的项目声明、发现与执行标准。</p>
+
+                <div class="quick-demo">
+                    <span class="comment">// 1. 在任意目录放置标识文件声明逻辑项目</span><br>
+                    <span class="folder">E:/go项目/Doc-war系列/效率工具/v1/myapp</span><br>
+                    ├── <span class="file">src/</span><br>
+                    └── <span class="file">.project</span><br>
+                    <br>
+                    <span class="comment">// 2. 在系统的任何地方直接启动</span><br>
+                    <span class="cmd">$ project myapp</span><br>
+                    <br>
+                    <span class="comment">// 3. 结果：启动终端自动跳转至myapp目录。</span>
+                </div>
+            </section>
+
+            <section id="mechanism">
+                <h2>运行机制</h2>
+                <p><code>.project</code> 本质上是一个“锚点”。<br />通过统一的 CLI 工具扫描你的工作目录，它在项目名与物理路径之间建立N-1关系的索引。</p>
+                <div class="feature-grid">
+                    <div class="feature-item">
+                        <strong>全局映射</strong>
+                        不再需要手动 cd或频繁的切换资源管理器。无论项目在哪里，一条指令直达项目深处。
+                    </div>
+                    <div class="feature-item">
+                        <strong>环境预设</strong>
+                        在 <code>.project</code> 中定义 shell 类型和权限要求，确保每个项目都在正确的环境中运行。
+                    </div>
+                </div>
+            </section>
+
+            <section id="what-why">
+                <h2>为什么需要它？</h2>
+                <p>在日常开发中，一台电脑可能有几十个项目散在各级文件夹。我们经常在不同的项目间，来回切换、启动终端、执行指令。这相当繁琐。</p>
+                <pre><code>Node.js 后台服务:        D:/companyA/xxx/backend/user-service
+Node.js 管理后台前端:    D:/companyA/xxx/frontend/admin-web
+Node.js 支付沙盒项目:    D:/companyA/xxx/backend/payment/sandbox
+Node.js 文档项目:        D:/companyA/xxx/docs/
+React 实验项目:          E:/experiments/openai-test
+Go 微服务(十几个):       D:/legacy/go/order-service
+Python 数据处理脚本:     E:/scripts/data-pipeline
+知识管理                 E:/markdowns/xxxx   (使用git管理了十几个typora项目)
+</code></pre>
+
+                <p>在服务器部署时，即便是单项目，一个最简单的网站，也涉及nginx、前台服务、后台服务、前台前端、后台前端、数据库,由于前后端、配置通常分离，也非常繁琐。终端别名不能持久化，中心化脚本配置的导航器方案心智成本不佳
+                </p>
+                <p>我们需要一个很干净的解决方案：足够轻量、足够灵活</p>
+                <br />
+                <p><strong>.project</strong> 的目标是作为它们的<strong>统一入口</strong>。你只需要在项目根目录放置一个
+                    <code>.project</code> 文件，即可通过简单的命令管理所有项目，然后通过项目名或序号快捷启动终端或打开资源管理器。
+                </p>
+
+                <div class="feature-grid">
+                    <div class="feature-item"><strong>跨语言</strong> 适用于任何编程语言和框架，以及项目组合抽象。</div>
+                    <div class="feature-item"><strong>无侵入</strong> 只是一个配置文件，不修改现有代码。</div>
+                    <div class="feature-item"><strong>环境隔离</strong> 同一个文件夹支持组合放置来隔离配置，轻松切换开发和生产配置。</div>
+                </div>
+            </section>
+
+            <section id="specification">
+                <h2>协议规范</h2>
+
+
+                <article id="project-discovery">
+                    <h3>项目发现</h3>
+                    <p>
+                        项目发现总是从用户配置的检索根目录开始，通过搜索<code>.project</code> 文件重建索引。
+                    </p>
+                    <p>
+                        1、协议不定义固定的扫描深度、范围、忽略目标，由上层实现来选择体验策略。<br />
+                        2、以 <code>.</code> 开头的目录在主流语义中默认是非业务入口，明确要求不参与项目发现。<br />
+                        3、对于 <code>node_modules</code> 等非业务目录，强烈建议上层纳入忽略配置实现。
+                    </p>
+                </article>
+
+                <article id="project-naming">
+                    <h3>项目名与文件命名</h3>
+                    <p>
+                        所有以 <code>.project</code> 结尾的文件，均被视为合法的项目声明文件。
+                    </p>
+                    <p>
+                        项目名称的确定遵循以下规则：<br />
+                        1、若协议文件显式具名，则使用文件名作为项目名；<br />
+                        2、若未具名，则默认使用 <code>.project</code> 所在目录名称。<br />
+                        3、允许同一个文件夹内部有多个`.project`文件，即支持同一个物理项目可以用不同的逻辑项目来打开。意味着你可以借助多个具名`.project`文件组合来实现策略隔离
+                    </p>
+                </article>
+
+                <article id="file-format">
+                    <h3>文件配置格式</h3>
+                    <p>文件允许为空。如果配置，则必须是标准的 <code>YAML</code> 格式，且使用 <code>UTF-8</code> 编码。它可以被命名为 <code>.project</code>
+                        或者 <code>&lt;名称&gt;.project</code>。</p>
+                    <pre><code># 示例配置
+commands:
+  start: npm run dev
+  build: ./scripts/build.sh
+shell: wt
+isAdmin: false</code></pre>
+                </article>
+
+                <article id="core-properties">
+                    <h3>核心属性</h3>
+                    <p>-启动终端</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>属性名</th>
+                                <th>类型</th>
+                                <th>声明的语义</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>shell</code></td>
+                                <td>String</td>
+                                <td>偏好的终端类型（如 wt, bash, powershell）。</td>
+                            </tr>
+                            <tr>
+                                <td><code>isAdmin</code></td>
+                                <td>Boolean</td>
+                                <td>是否需要管理员/Root 权限执行。</td>
+                            </tr>
+                            <tr>
+                                <td><code>commands</code></td>
+                                <td>Map</td>
+                                <td>自定义命令映射表，如 start, test 等。</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <p>-启动其他应用</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>属性名</th>
+                                <th>类型</th>
+                                <th>声明的语义</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>app</code></td>
+                                <td>String</td>
+                                <td>用其他应用(比如typora、vscode)替代终端，来接管启动和接收路径上下文。<br />
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+
+                <article id="extend-properties">
+                    <h3>扩展属性</h3>
+                    <p>-扩展槽</p>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>属性名</th>
+                                <th>类型</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>extensions</code></td>
+                                <td><code>map{string,map}</code></td>
+                                <td>上层扩展占位槽。</td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                    <p>
+                        语义说明：<br />
+                        1、协议层永远不依赖其中任何字段，所有上层功能扩展必须放入此槽内。<br />
+                        2、extensions采用命名空间隔离，每个命名空间代表一个上层产品或能力单元，且更新操作时不应该破坏其他命名空间的原值。
+                    </p>
+                </article>
+
+
+
+
+            </section>
+
+            <section id="implementations">
+                <h2>官方实现</h2>
+                <p>该协议目前已做了上层CLI工具实现：</p>
+                <div style="margin-top: 1.5rem;">
+                    <a href="https://github.com/doc-war/project">
+                        <h4 style="color:#667eea">Project (Go)</h4>
+                    </a>
+                    <h3>核心体验</h3>
+                    <p>1、轻量级的二进制工具，自动维护环境变量,启动一次任意执行</p>
+                    <p>2、支持project快速罗列项目，使用序号精准启动</p>
+                </div>
+                <article id="cmds">
+                    <h3>命令集</h3>
+                    子命令具有最高优先级，项目名需避免与其冲突。
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>子命令</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+
+                                <td><code>project init</code></td>
+
+                                <td> 将当前目录声明为项目，交互式生成 <code>.project</code> 文件。 </td>
+                            </tr>
+                            <tr>
+                                <td><code>project search</code></td>
+                                <td> 扫描磁盘中的 <code>.project</code> 项目，并将发现结果写入本地缓存。 </td>
+                            </tr>
+                            <tr>
+                                <td><code>project root add|remove [path]</code></td>
+                                <td> 管理项目搜索的根目录集合；未传 path 时默认使用当前目录。 </td>
+                            </tr>
+                            <tr>
+
+                                <td><code>project default [shell]</code></td>
+
+                                <td> 设置或读取全局默认终端类型，用于统一项目启动环境，减少项目级配置。 </td>
+                            </tr>
+                            <tr>
+
+                                <td><code>project open &lt;project&gt;</code></td>
+
+                                <td> 打开指定项目所在目录的<span style="color:#ff8822">文件资源管理器</span>。 </td>
+                            </tr>
+                            <tr>
+
+                                <td><code>project help</code></td>
+
+                                <td> 显示完整帮助信息与示例说明。 </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    项目参数型命令表
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>命令结构</th>
+                                <th>参数</th>
+                                <th>类型</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>project</code></td>
+                                <td>无</td>
+                                <td>Interactive</td>
+                                <td> 列出所有已缓存项目并进入交互模式，可通过<code>[序号]</code>精准选择并启动项目。 </td>
+                            </tr>
+                            <tr>
+                                <td><code>project &lt;project&gt;</code></td>
+                                <td><code>&lt;project&gt;</code></td>
+                                <td>Launch</td>
+                                <td> 启动指定项目。优先检查.project中的app字段，如有则启动app并传递路径上下文。否则默认启动终端。 </td>
+                            </tr>
+                            <tr>
+                                <td><code>project &lt;project&gt; &lt;command&gt;</code></td>
+                                <td> <code>&lt;project&gt;</code><br /> <code>&lt;command&gt;</code> </td>
+                                <td>Launch + Exec</td>
+                                <td> 启动指定项目，并在新终端中执行项目内配置的命令，如 dev、start、test 等。 </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </article>
+            </section>
+
+            <footer>
+                <p>@zhaoliwei</p>
+            </footer>
+        </main>
+    </div>
+
+    <script>
+        // 简单的导航高亮逻辑
+        const links = document.querySelectorAll('.nav-link');
+        const sections = Array.from(links).map(link => document.querySelector(link.getAttribute('href'))).filter(el => el);
+
+        window.addEventListener('scroll', () => {
+            let scrollPos = window.scrollY + 100;
+            sections.forEach((section, i) => {
+                if (scrollPos >= section.offsetTop && scrollPos < (section.offsetTop + section.offsetHeight)) {
+                    links.forEach(l => l.classList.remove('active'));
+                    links[i].classList.add('active');
+                }
+            });
+        });
+    </script>
+
+</body>
+
+</html>
