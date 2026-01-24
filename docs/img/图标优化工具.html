@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PNG图标优化</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            margin-bottom: 30px;
+        }
+        .upload-area {
+            border: 2px dashed #ccc;
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        .upload-area:hover {
+            border-color: #5b9bd5;
+            background: #f9f9f9;
+        }
+        input[type="file"] {
+            display: none;
+        }
+        .preview-area {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-top: 30px;
+        }
+        .preview-box {
+            text-align: center;
+        }
+        .preview-box h3 {
+            margin-bottom: 15px;
+            color: #666;
+        }
+        canvas {
+            max-width: 100%;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background: 
+                repeating-conic-gradient(#e0e0e0 0% 25%, transparent 0% 50%) 
+                50% / 20px 20px;
+        }
+        button {
+            margin-top: 20px;
+            padding: 12px 30px;
+            background: #5b9bd5;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        button:hover {
+            background: #4a8bc2;
+        }
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+        }
+        .controls {
+            margin-top: 20px;
+            padding: 20px;
+            background: #f9f9f9;
+            border-radius: 8px;
+        }
+        .control-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            color: #666;
+            font-weight: 500;
+        }
+        input[type="range"] {
+            width: 100%;
+        }
+        .value-display {
+            display: inline-block;
+            margin-left: 10px;
+            color: #5b9bd5;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>PNG图标优化工具</h1>
+
+        <p><a href="https://ezremove.ai/zh/" >https://ezremove.ai/zh/ 可以擦除背景</a></p>
+        
+        <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+            <p>点击上传图标文件</p>
+            <p style="color: #999; font-size: 14px;">支持 PNG 格式</p>
+        </div>
+        <input type="file" id="fileInput" accept="image/png">
+
+        
+        <div class="controls" id="controls" style="display: none;">
+            <div class="control-group">
+                <label>
+                    缩放比例: <span class="value-display" id="scaleValue">1.5</span>
+                </label>
+                <input type="range" id="scaleSlider" min="1.1" max="2.5" step="0.1" value="1.5">
+            </div>
+            <div class="control-group">
+                <label>
+                    留白压缩: <span class="value-display" id="paddingValue">50%</span>
+                </label>
+                <input type="range" id="paddingSlider" min="0" max="80" step="5" value="50">
+            </div>
+            <div class="control-group">
+                <label>
+                    导出尺寸: <span class="value-display" id="sizeValue">原始</span>
+                </label>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <input type="number" id="exportWidth" placeholder="宽度" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <span>×</span>
+                    <input type="number" id="exportHeight" placeholder="高度" style="width: 100px; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
+                    <button onclick="resetSize()" style="margin: 0; padding: 8px 15px; font-size: 14px;">重置</button>
+                </div>
+                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                    <button onclick="setSize(512)" style="margin: 0; padding: 6px 12px; font-size: 13px;">512×512</button>
+                    <button onclick="setSize(256)" style="margin: 0; padding: 6px 12px; font-size: 13px;">256×256</button>
+                    <button onclick="setSize(128)" style="margin: 0; padding: 6px 12px; font-size: 13px;">128×128</button>
+                    <button onclick="setSize(64)" style="margin: 0; padding: 6px 12px; font-size: 13px;">64×64</button>
+                </div>
+            </div>
+        </div>
+        
+        <div class="preview-area" id="previewArea" style="display: none;">
+            <div class="preview-box">
+                <h3>原始图标</h3>
+                <canvas id="originalCanvas"></canvas>
+            </div>
+            <div class="preview-box">
+                <h3>优化后</h3>
+                <canvas id="optimizedCanvas"></canvas>
+            </div>
+        </div>
+        
+        <div style="text-align: center;">
+            <button id="downloadBtn" style="display: none;">下载优化后的PNG</button>
+        </div>
+    </div>
+
+    <script>
+        const fileInput = document.getElementById('fileInput');
+        const originalCanvas = document.getElementById('originalCanvas');
+        const optimizedCanvas = document.getElementById('optimizedCanvas');
+        const previewArea = document.getElementById('previewArea');
+        const downloadBtn = document.getElementById('downloadBtn');
+        const controls = document.getElementById('controls');
+        const scaleSlider = document.getElementById('scaleSlider');
+        const paddingSlider = document.getElementById('paddingSlider');
+        const scaleValue = document.getElementById('scaleValue');
+        const paddingValue = document.getElementById('paddingValue');
+        const sizeValue = document.getElementById('sizeValue');
+        const exportWidth = document.getElementById('exportWidth');
+        const exportHeight = document.getElementById('exportHeight');
+        
+        let originalImage = null;
+
+        function setSize(size) {
+            exportWidth.value = size;
+            exportHeight.value = size;
+            updateSizeDisplay();
+        }
+
+        function resetSize() {
+            exportWidth.value = '';
+            exportHeight.value = '';
+            updateSizeDisplay();
+        }
+
+        function updateSizeDisplay() {
+            if (exportWidth.value && exportHeight.value) {
+                sizeValue.textContent = `${exportWidth.value}×${exportHeight.value}`;
+            } else {
+                sizeValue.textContent = '原始';
+            }
+        }
+
+        exportWidth.addEventListener('input', updateSizeDisplay);
+        exportHeight.addEventListener('input', updateSizeDisplay);
+
+        fileInput.addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.onload = function() {
+                        originalImage = img;
+                        processImage();
+                        controls.style.display = 'block';
+                        previewArea.style.display = 'grid';
+                        downloadBtn.style.display = 'inline-block';
+                    };
+                    img.src = event.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        scaleSlider.addEventListener('input', function() {
+            scaleValue.textContent = this.value;
+            processImage();
+        });
+
+        paddingSlider.addEventListener('input', function() {
+            paddingValue.textContent = this.value + '%';
+            processImage();
+        });
+
+        function processImage() {
+            if (!originalImage) return;
+
+            const scale = parseFloat(scaleSlider.value);
+            const paddingReduction = parseFloat(paddingSlider.value) / 100;
+
+            // 显示原始图像
+            originalCanvas.width = originalImage.width;
+            originalCanvas.height = originalImage.height;
+            const originalCtx = originalCanvas.getContext('2d');
+            originalCtx.clearRect(0, 0, originalCanvas.width, originalCanvas.height);
+            originalCtx.drawImage(originalImage, 0, 0);
+
+            // 创建优化后的图像
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = originalImage.width;
+            tempCanvas.height = originalImage.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(originalImage, 0, 0);
+
+            // 检测内容边界
+            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            const bounds = detectContentBounds(imageData);
+
+            // 计算新的尺寸和位置
+            const contentWidth = bounds.right - bounds.left;
+            const contentHeight = bounds.bottom - bounds.top;
+            
+            optimizedCanvas.width = originalImage.width;
+            optimizedCanvas.height = originalImage.height;
+            const optimizedCtx = optimizedCanvas.getContext('2d');
+            optimizedCtx.clearRect(0, 0, optimizedCanvas.width, optimizedCanvas.height);
+
+            // 计算缩放后的尺寸
+            const newWidth = contentWidth * scale;
+            const newHeight = contentHeight * scale;
+            
+            // 居中绘制
+            const offsetX = (optimizedCanvas.width - newWidth) / 2;
+            const offsetY = (optimizedCanvas.height - newHeight) / 2;
+
+            optimizedCtx.drawImage(
+                originalImage,
+                bounds.left, bounds.top, contentWidth, contentHeight,
+                offsetX, offsetY, newWidth, newHeight
+            );
+        }
+
+        function detectContentBounds(imageData) {
+            const { data, width, height } = imageData;
+            let minX = width, minY = height, maxX = 0, maxY = 0;
+
+            for (let y = 0; y < height; y++) {
+                for (let x = 0; x < width; x++) {
+                    const alpha = data[(y * width + x) * 4 + 3];
+                    if (alpha > 10) {
+                        minX = Math.min(minX, x);
+                        minY = Math.min(minY, y);
+                        maxX = Math.max(maxX, x);
+                        maxY = Math.max(maxY, y);
+                    }
+                }
+            }
+
+            return {
+                left: minX,
+                top: minY,
+                right: maxX + 1,
+                bottom: maxY + 1
+            };
+        }
+
+        downloadBtn.addEventListener('click', function() {
+            if (!originalImage) return;
+
+            const scale = parseFloat(scaleSlider.value);
+            const targetWidth = exportWidth.value ? parseInt(exportWidth.value) : originalImage.width;
+            const targetHeight = exportHeight.value ? parseInt(exportHeight.value) : originalImage.height;
+            
+            // 创建导出用的canvas
+            const exportCanvas = document.createElement('canvas');
+            exportCanvas.width = targetWidth;
+            exportCanvas.height = targetHeight;
+            const exportCtx = exportCanvas.getContext('2d');
+            exportCtx.clearRect(0, 0, targetWidth, targetHeight);
+
+            // 检测内容边界
+            const tempCanvas = document.createElement('canvas');
+            tempCanvas.width = originalImage.width;
+            tempCanvas.height = originalImage.height;
+            const tempCtx = tempCanvas.getContext('2d');
+            tempCtx.drawImage(originalImage, 0, 0);
+            const imageData = tempCtx.getImageData(0, 0, tempCanvas.width, tempCanvas.height);
+            const bounds = detectContentBounds(imageData);
+
+            // 计算内容区域尺寸
+            const contentWidth = bounds.right - bounds.left;
+            const contentHeight = bounds.bottom - bounds.top;
+            
+            // 计算缩放后的内容尺寸(相对原图)
+            const scaledContentWidth = contentWidth * scale;
+            const scaledContentHeight = contentHeight * scale;
+            
+            // 计算缩放比例(从原图尺寸到目标尺寸)
+            const scaleRatio = Math.min(targetWidth / originalImage.width, targetHeight / originalImage.height);
+            
+            // 最终内容尺寸
+            const finalWidth = scaledContentWidth * scaleRatio;
+            const finalHeight = scaledContentHeight * scaleRatio;
+            
+            // 居中绘制
+            const offsetX = (targetWidth - finalWidth) / 2;
+            const offsetY = (targetHeight - finalHeight) / 2;
+
+            exportCtx.drawImage(
+                originalImage,
+                bounds.left, bounds.top, contentWidth, contentHeight,
+                offsetX, offsetY, finalWidth, finalHeight
+            );
+            
+            exportCanvas.toBlob(function(blob) {
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `optimized_icon_${targetWidth}x${targetHeight}.png`;
+                a.click();
+                URL.revokeObjectURL(url);
+            }, 'image/png');
+        });
+    </script>
+</body>
+</html>
