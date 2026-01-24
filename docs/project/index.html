@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
     <title>.project - 通用项目入口协议 Project Entry Protocol</title>
+    <script src="/analytics.js" defer></script><!-- 引入统计代码 -->
 
     <meta name="description" content="一种跨语言、跨工具的项目声明、发现与执行协议，通过 .project 文件统一项目启动入口。">
 
@@ -94,298 +95,298 @@
   "license": "https://opensource.org/licenses/MIT"
 }
 </script>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+<style>
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
 
-        body {
-            font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
-            line-height: 1.6;
-            color: #333;
-            background: #fff;
-        }
+    body {
+        font-family: "PingFang SC", "Hiragino Sans GB", "Microsoft YaHei", sans-serif;
+        line-height: 1.6;
+        color: #333;
+        background: #fff;
+    }
 
-        /* 布局容器 */
+    /* 布局容器 */
+    .container {
+        display: flex;
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+
+    /* 模拟文件树侧边栏 */
+    .sidebar {
+        width: 280px;
+        padding: 3rem 1.5rem;
+        position: sticky;
+        top: 0;
+        height: 100vh;
+        overflow-y: auto;
+        border-right: 1px solid #eee;
+        background: #fff;
+    }
+
+    .tree-root {
+        font-weight: bold;
+        color: #2c3e50;
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+
+    .tree-root::before {
+        content: "📂 ";
+        font-weight: normal;
+    }
+
+    .sidebar ul {
+        list-style: none;
+        position: relative;
+    }
+
+    .sidebar ul ul {
+        margin-left: 1.2rem;
+        border-left: 1px dashed #ccc;
+        /* 树枝线 */
+    }
+
+    .sidebar li {
+        position: relative;
+        padding: 0.2rem 0 0.2rem 1rem;
+    }
+
+    .sidebar li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.8rem;
+        width: 0.8rem;
+        border-top: 1px dashed #ccc;
+    }
+
+    .sidebar a {
+        color: #555;
+        text-decoration: none;
+        font-size: 0.9rem;
+        transition: color 0.2s;
+        display: inline-block;
+    }
+
+    .sidebar a:hover {
+        color: #667eea;
+    }
+
+    .sidebar a.active {
+        color: #667eea;
+        font-weight: 600;
+    }
+
+    .folder::after {
+        content: "/";
+        opacity: 0.5;
+    }
+
+    /* 侧边栏底部信息 (原 Footer 内容) */
+    .sidebar-footer {
+        margin-top: 2rem;
+        padding-top: 1.5rem;
+        border-top: 1px solid #f0f0f0;
+        font-size: 0.85rem;
+        color: #999;
+    }
+
+    .sidebar-footer a {
+        color: #666;
+        text-decoration: none;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 5px;
+    }
+
+    .sidebar-footer a:hover {
+        color: #667eea;
+    }
+
+    .github-icon {
+        width: 20px;
+        height: 20px;
+        fill: currentColor;
+        vertical-align: middle;
+    }
+
+    /* 主内容区 */
+    main {
+        flex: 1;
+        padding: 3rem 4rem;
+        max-width: 900px;
+    }
+
+    section {
+        margin-bottom: 5rem;
+    }
+
+    h2 {
+        font-size: 1.8rem;
+        color: #2c3e50;
+        margin-bottom: 1.5rem;
+        padding-bottom: 0.5rem;
+        border-bottom: 1px solid #eee;
+    }
+
+    h3 {
+        margin: 2rem 0 1rem;
+        color: #34495e;
+    }
+
+    /* 极简 Hero 区域 */
+    .hero {
+        padding-bottom: 3rem;
+        border-bottom: 2px solid #f0f0f0;
+        margin-bottom: 3rem;
+    }
+
+    .hero h1 {
+        font-size: 3.5rem;
+        font-weight: 700;
+        color: #2c3e50;
+        margin-bottom: 0.5rem;
+    }
+
+    .hero p {
+        font-size: 1.2rem;
+        color: #666;
+        margin-bottom: 2rem;
+    }
+
+    /* 黑色 Demo 演示区 */
+    .quick-demo {
+        background: #1a1a1a;
+        color: #a6accd;
+        padding: 1.5rem;
+        border-radius: 8px;
+        font-family: "Fira Code", "Consolas", monospace;
+        line-height: 1.8;
+        font-size: 0.95rem;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .quick-demo .arrow {
+        color: #667eea;
+        margin: 0 10px;
+    }
+
+    .quick-demo .comment {
+        color: #676e95;
+        font-style: italic;
+    }
+
+    /* 代码块 */
+    pre {
+        background: #f8f9fa;
+        padding: 1.6rem;
+        border-radius: 6px;
+        overflow-x: auto;
+        border: 1px solid #eee;
+        margin: 1rem 0;
+    }
+
+    /* 仅作用于 inline code */
+    :not(pre)>code {
+        font-family: 'Monaco', 'Menlo', monospace;
+        font-size: 1rem;
+        color: #ea5708;
+
+        background-color: rgba(234, 87, 8, 0.08);
+        padding: 0.15em 0.35em;
+        border-radius: 4px;
+
+        box-decoration-break: clone;
+        -webkit-box-decoration-break: clone;
+    }
+
+
+    pre code {
+        color: #333;
+        font-size: 1rem;
+    }
+
+    /* 特性网格 */
+    .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+    }
+
+    .feature-item {
+        padding: 1.2rem;
+        border: 1px solid #eee;
+        border-radius: 8px;
+        transition: border-color 0.3s;
+    }
+
+    .feature-item:hover {
+        border-color: #667eea;
+    }
+
+    .feature-item strong {
+        display: block;
+        margin-bottom: 0.5rem;
+        color: #667eea;
+    }
+
+    /* 表格 */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1rem 0;
+    }
+
+    table th,
+    table td {
+        padding: 0.8rem;
+        text-align: left;
+        border-bottom: 1px solid #eee;
+    }
+
+    table th {
+        background: #fafafa;
+        font-weight: 600;
+    }
+
+    footer {
+        padding: 4rem 0;
+        color: #999;
+        font-size: 0.85rem;
+        border-top: 1px solid #eee;
+        margin-top: 4rem;
+    }
+
+    @media (max-width: 768px) {
         .container {
-            display: flex;
-            max-width: 1200px;
-            margin: 0 auto;
+            flex-direction: column;
         }
 
-        /* 模拟文件树侧边栏 */
         .sidebar {
-            width: 280px;
-            padding: 3rem 1.5rem;
-            position: sticky;
-            top: 0;
-            height: 100vh;
-            overflow-y: auto;
-            border-right: 1px solid #eee;
-            background: #fff;
-        }
-
-        .tree-root {
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-        }
-
-        .tree-root::before {
-            content: "📂 ";
-            font-weight: normal;
-        }
-
-        .sidebar ul {
-            list-style: none;
+            width: 100%;
+            height: auto;
             position: relative;
-        }
-
-        .sidebar ul ul {
-            margin-left: 1.2rem;
-            border-left: 1px dashed #ccc;
-            /* 树枝线 */
-        }
-
-        .sidebar li {
-            position: relative;
-            padding: 0.2rem 0 0.2rem 1rem;
-        }
-
-        .sidebar li::before {
-            content: "";
-            position: absolute;
-            left: 0;
-            top: 0.8rem;
-            width: 0.8rem;
-            border-top: 1px dashed #ccc;
-        }
-
-        .sidebar a {
-            color: #555;
-            text-decoration: none;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-            display: inline-block;
-        }
-
-        .sidebar a:hover {
-            color: #667eea;
-        }
-
-        .sidebar a.active {
-            color: #667eea;
-            font-weight: 600;
-        }
-
-        .folder::after {
-            content: "/";
-            opacity: 0.5;
-        }
-
-        /* 侧边栏底部信息 (原 Footer 内容) */
-        .sidebar-footer {
-            margin-top: 2rem;
-            padding-top: 1.5rem;
-            border-top: 1px solid #f0f0f0;
-            font-size: 0.85rem;
-            color: #999;
-        }
-
-        .sidebar-footer a {
-            color: #666;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-            margin-bottom: 5px;
-        }
-
-        .sidebar-footer a:hover {
-            color: #667eea;
-        }
-
-        .github-icon {
-            width: 20px;
-            height: 20px;
-            fill: currentColor;
-            vertical-align: middle;
-        }
-
-        /* 主内容区 */
-        main {
-            flex: 1;
-            padding: 3rem 4rem;
-            max-width: 900px;
-        }
-
-        section {
-            margin-bottom: 5rem;
-        }
-
-        h2 {
-            font-size: 1.8rem;
-            color: #2c3e50;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
+            border-right: none;
             border-bottom: 1px solid #eee;
         }
 
-        h3 {
-            margin: 2rem 0 1rem;
-            color: #34495e;
-        }
-
-        /* 极简 Hero 区域 */
-        .hero {
-            padding-bottom: 3rem;
-            border-bottom: 2px solid #f0f0f0;
-            margin-bottom: 3rem;
+        main {
+            padding: 2rem 1.5rem;
         }
 
         .hero h1 {
-            font-size: 3.5rem;
-            font-weight: 700;
-            color: #2c3e50;
-            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
         }
-
-        .hero p {
-            font-size: 1.2rem;
-            color: #666;
-            margin-bottom: 2rem;
-        }
-
-        /* 黑色 Demo 演示区 */
-        .quick-demo {
-            background: #1a1a1a;
-            color: #a6accd;
-            padding: 1.5rem;
-            border-radius: 8px;
-            font-family: "Fira Code", "Consolas", monospace;
-            line-height: 1.8;
-            font-size: 0.95rem;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-        }
-
-        .quick-demo .arrow {
-            color: #667eea;
-            margin: 0 10px;
-        }
-
-        .quick-demo .comment {
-            color: #676e95;
-            font-style: italic;
-        }
-
-        /* 代码块 */
-        pre {
-            background: #f8f9fa;
-            padding: 1.6rem;
-            border-radius: 6px;
-            overflow-x: auto;
-            border: 1px solid #eee;
-            margin: 1rem 0;
-        }
-
-        /* 仅作用于 inline code */
-        :not(pre)>code {
-            font-family: 'Monaco', 'Menlo', monospace;
-            font-size: 1rem;
-            color: #ea5708;
-
-            background-color: rgba(234, 87, 8, 0.08);
-            padding: 0.15em 0.35em;
-            border-radius: 4px;
-
-            box-decoration-break: clone;
-            -webkit-box-decoration-break: clone;
-        }
-
-
-        pre code {
-            color: #333;
-            font-size: 1rem;
-        }
-
-        /* 特性网格 */
-        .feature-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1.5rem;
-            margin: 2rem 0;
-        }
-
-        .feature-item {
-            padding: 1.2rem;
-            border: 1px solid #eee;
-            border-radius: 8px;
-            transition: border-color 0.3s;
-        }
-
-        .feature-item:hover {
-            border-color: #667eea;
-        }
-
-        .feature-item strong {
-            display: block;
-            margin-bottom: 0.5rem;
-            color: #667eea;
-        }
-
-        /* 表格 */
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin: 1rem 0;
-        }
-
-        table th,
-        table td {
-            padding: 0.8rem;
-            text-align: left;
-            border-bottom: 1px solid #eee;
-        }
-
-        table th {
-            background: #fafafa;
-            font-weight: 600;
-        }
-
-        footer {
-            padding: 4rem 0;
-            color: #999;
-            font-size: 0.85rem;
-            border-top: 1px solid #eee;
-            margin-top: 4rem;
-        }
-
-        @media (max-width: 768px) {
-            .container {
-                flex-direction: column;
-            }
-
-            .sidebar {
-                width: 100%;
-                height: auto;
-                position: relative;
-                border-right: none;
-                border-bottom: 1px solid #eee;
-            }
-
-            main {
-                padding: 2rem 1.5rem;
-            }
-
-            .hero h1 {
-                font-size: 2.5rem;
-            }
-        }
-    </style>
+    }
+</style>
 </head>
 
 <body>
@@ -395,7 +396,7 @@
             <div class="tree-root">.project协议文档</div>
             <nav>
                 <ul>
-                    <li><a href="#home" class="nav-link">体验.md</a></li>
+                    <li><a href="#home" class="nav-link">项目声明.md</a></li>
                     <li><a href="#what-why" class="nav-link">为什么需要?</a></li>
                     <li class="folder">
                         <a href="#specification" class="nav-link">协议规范<sup>(v1.0.0)</sup></a>
@@ -430,8 +431,7 @@
         <main>
             <section id="home" class="hero">
                 <h1>Project Entry Protocol</h1>
-                <p>通用项目入口协议-定义一种跨语言、跨工具的项目声明、发现与执行标准。</p>
-
+                <p>项目入口协议-定义一种开放的、跨语言、跨工具的项目声明、发现与执行标准。</p>
                 <div class="quick-demo">
                     <span class="comment">// 1. 在任意目录放置标识文件声明逻辑项目</span><br>
                     <span class="folder">E:/go项目/Doc-war系列/效率工具/v1/myapp</span><br>
@@ -445,9 +445,16 @@
                 </div>
             </section>
 
+            <section id="project-mark">
+                <h2>项目声明</h2>
+                <p>以 <code>.project</code> 结尾的文件，来声明该文件所在的目录是一个逻辑项目。</p>
+                <p><code>.project文件</code> 的唯一职责:<br />
+                    以最低成本、非中心化的方式，自由声明一个可被发现的逻辑项目，为上层中心化管理工具提供稳定、可扩展的读取入口。</p>
+            </section>
+            
             <section id="mechanism">
                 <h2>运行机制</h2>
-                <p><code>.project</code> 本质上是一个“锚点”。<br />通过统一的 CLI 工具扫描你的工作目录，它在项目名与物理路径之间建立N-1关系的索引。</p>
+                <p><code>.project文件</code> 本质上是一个“锚点”。<br />通过统一的 CLI 工具可以扫描你的工作目录，它在项目名与物理路径之间建立N-1关系的索引，从而实现中心化管理。</p>
                 <div class="feature-grid">
                     <div class="feature-item">
                         <strong>全局映射</strong>
@@ -455,7 +462,7 @@
                     </div>
                     <div class="feature-item">
                         <strong>环境预设</strong>
-                        在 <code>.project</code> 中定义 shell 类型和权限要求，确保每个项目都在正确的环境中运行。
+                        在 <code>.project</code> 中定义shell类型和权限要求等语义化配置，确保每个项目可以以正确的方式进入。
                     </div>
                 </div>
             </section>
@@ -473,12 +480,21 @@ Python 数据处理脚本:     E:/scripts/data-pipeline
 知识管理                 E:/markdowns/xxxx   (使用git管理了十几个typora项目)
 </code></pre>
 
-                <p>在服务器部署时，即便是单项目，一个最简单的网站，也涉及nginx、前台服务、后台服务、前台前端、后台前端、数据库,由于前后端、配置通常分离，也非常繁琐。终端别名不能持久化，中心化脚本配置的导航器方案心智成本不佳
+                <p>在服务器部署时，由于前后端分离、配置分离等各种原则，即便是单项目，一个最简单的网站，也非常繁琐。
                 </p>
-                <p>我们需要一个很干净的解决方案：足够轻量、足够灵活</p>
+                <pre><code>涉及nginx、
+前台服务、前台前端、
+后台服务、后台前端、
+数据库</code></pre>
+                <p>我们需要一个干净的解决方案：足够轻量、足够灵活、不需要心智成本！</p>
+                <br/>
+                    <h4>All you need is a declaration: this is a project!</h4>
                 <br />
-                <p><strong>.project</strong> 的目标是作为它们的<strong>统一入口</strong>。你只需要在项目根目录放置一个
-                    <code>.project</code> 文件，即可通过简单的命令管理所有项目，然后通过项目名或序号快捷启动终端或打开资源管理器。
+                    现在，你只需要在项目根目录放置一个
+                    <code>.project</code> 文件，即可通过简单的命令被发现、管理，然后通过[项目名]或[序号]快捷操作：<br/>
+                    1、启动终端<br/>
+                    2、打开资源管理器<br/>
+                    3、或typora、vscode等各种以文件夹路径为目标上下文的工具。
                 </p>
 
                 <div class="feature-grid">
@@ -490,17 +506,14 @@ Python 数据处理脚本:     E:/scripts/data-pipeline
 
             <section id="specification">
                 <h2>协议规范</h2>
-
-
                 <article id="project-discovery">
                     <h3>项目发现</h3>
                     <p>
-                        项目发现总是从用户配置的检索根目录开始，通过搜索<code>.project</code> 文件重建索引。
+                        项目发现总是从用户配置的检索根目录开始，通过搜索<code>.project</code> 文件快速重建索引。
                     </p>
                     <p>
-                        1、协议不定义固定的扫描深度、范围、忽略目标，由上层实现来选择体验策略。<br />
-                        2、以 <code>.</code> 开头的目录在主流语义中默认是非业务入口，明确要求不参与项目发现。<br />
-                        3、对于 <code>node_modules</code> 等非业务目录，强烈建议上层纳入忽略配置实现。
+                        1、协议不定义固定的扫描起点、深度、范围、忽略目标，由上层实现来选择体验策略。<br />
+                        2、对于 <code>.</code>开头 、<code>node_modules</code> 等在主流语义中默认是非业务入口的目录，强烈建议上层实现自动忽略或纳入忽略配置。<br />
                     </p>
                 </article>
 
@@ -511,22 +524,27 @@ Python 数据处理脚本:     E:/scripts/data-pipeline
                     </p>
                     <p>
                         项目名称的确定遵循以下规则：<br />
-                        1、若协议文件显式具名，则使用文件名作为项目名；<br />
-                        2、若未具名，则默认使用 <code>.project</code> 所在目录名称。<br />
-                        3、允许同一个文件夹内部有多个`.project`文件，即支持同一个物理项目可以用不同的逻辑项目来打开。意味着你可以借助多个具名`.project`文件组合来实现策略隔离
+                        1、若协议文件显式具名，则优先使用文件名作为项目名。<br />
+                        2、若未具名，则默认使用所在文件夹名称作为项目名。<br />
+                        3、允许同一个文件夹内部有多个声明文件，即支持同一个物理路径可以用不同的逻辑项目来管理进入操作。这意味着你可以借助多个具名.project文件组合来实现策略隔离。
                     </p>
+                    <pre><code>D:/legacy/go/order-service
+├── src/
+├── dev.project   # 开发环境声明
+├── test.project  # 测试环境声明
+└── prod.project  # 生产环境声明</code></pre>
                 </article>
 
                 <article id="file-format">
                     <h3>文件配置格式</h3>
-                    <p>文件允许为空。如果配置，则必须是标准的 <code>YAML</code> 格式，且使用 <code>UTF-8</code> 编码。它可以被命名为 <code>.project</code>
-                        或者 <code>&lt;名称&gt;.project</code>。</p>
+                    <p>文件内容允许为空。如果配置，则必须统一遵循标准的 <code>YAML</code> 格式，且使用 <code>UTF-8</code> 编码，以确保跨上层实现的存储一致性。</p>
                     <pre><code># 示例配置
-commands:
-  start: npm run dev
-  build: ./scripts/build.sh
-shell: wt
-isAdmin: false</code></pre>
+shell: wt                  ## 优先以windows terminal启动
+isAdmin: true              ## 要求以管理员权限启动
+commands:                  ## 别名配置最常用命令
+    start: npm run dev
+    build: ./scripts/build.sh
+</code></pre>
                 </article>
 
                 <article id="core-properties">
@@ -609,17 +627,25 @@ isAdmin: false</code></pre>
 
 
             </section>
-
+            
+            <section id="implementations">
+                <h2>License</h2>
+                <p>本协议采用完全开放许可: MIT License</p>
+            </section>
             <section id="implementations">
                 <h2>官方实现</h2>
-                <p>该协议目前已做了上层CLI工具实现：</p>
+                <p>基于该协议，目前已做了上层CLI工具实现：</p>
                 <div style="margin-top: 1.5rem;">
                     <a href="https://github.com/doc-war/project">
                         <h4 style="color:#667eea">Project (Go)</h4>
                     </a>
                     <h3>核心体验</h3>
-                    <p>1、轻量级的二进制工具，自动维护环境变量,启动一次任意执行</p>
-                    <p>2、支持project快速罗列项目，使用序号精准启动</p>
+                    <p>1、轻量级的二进制工具，自动维护环境变量，启动一次后任意目录均可识别project命令</p>
+                    <p>2、支持无参数project交互式命令，快速罗列项目，使用序号精准执行进入操作</p>
+                    <p>3、自动忽略.开头的文件夹，以及node_modules等多种主流语言的包管理目录</p>
+                    <p>4、只扫描根目录下最多5层，性能极佳</p>
+                    <p>5、高容错，如配置格式yaml解析非法，会按默认无配置处理，且有反馈体验</p>
+                    <p>6、支持全局默认配置shell，可以尽可能避免项目级配置。优先级是项目级配置>全局默认配置>工具默认配置</p>
                 </div>
                 <article id="cmds">
                     <h3>命令集</h3>
@@ -656,7 +682,7 @@ isAdmin: false</code></pre>
 
                                 <td><code>project open &lt;project&gt;</code></td>
 
-                                <td> 打开指定项目所在目录的<span style="color:#ff8822">文件资源管理器</span>。 </td>
+                                <td> 打开指定项目所在目录的<span style="color:#2288ff">文件资源管理器</span>。 </td>
                             </tr>
                             <tr>
 
@@ -672,7 +698,6 @@ isAdmin: false</code></pre>
                         <thead>
                             <tr>
                                 <th>命令结构</th>
-                                <th>参数</th>
                                 <th>类型</th>
                                 <th>说明</th>
                             </tr>
@@ -680,20 +705,17 @@ isAdmin: false</code></pre>
                         <tbody>
                             <tr>
                                 <td><code>project</code></td>
-                                <td>无</td>
                                 <td>Interactive</td>
                                 <td> 列出所有已缓存项目并进入交互模式，可通过<code>[序号]</code>精准选择并启动项目。 </td>
                             </tr>
                             <tr>
                                 <td><code>project &lt;project&gt;</code></td>
-                                <td><code>&lt;project&gt;</code></td>
                                 <td>Launch</td>
                                 <td> 启动指定项目。优先检查.project中的app字段，如有则启动app并传递路径上下文。否则默认启动终端。 </td>
                             </tr>
                             <tr>
                                 <td><code>project &lt;project&gt; &lt;command&gt;</code></td>
-                                <td> <code>&lt;project&gt;</code><br /> <code>&lt;command&gt;</code> </td>
-                                <td>Launch + Exec</td>
+                                <td>Launch + Execute</td>
                                 <td> 启动指定项目，并在新终端中执行项目内配置的命令，如 dev、start、test 等。 </td>
                             </tr>
                         </tbody>
