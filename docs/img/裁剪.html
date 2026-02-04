@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PNG 中心裁剪</title>
+<style>
+  body { 
+    font-family: sans-serif; 
+    padding: 20px;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+  canvas { 
+    border: 1px solid #ccc; 
+    margin-top: 10px;
+    background: repeating-conic-gradient(#eee 0% 25%, #fff 0% 50%) 50% / 20px 20px;
+  }
+  .controls {
+    margin: 15px 0;
+  }
+  input[type="number"] {
+    width: 80px;
+    padding: 5px;
+  }
+  button {
+    padding: 5px 15px;
+    cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<h2>PNG 中心裁剪工具</h2>
+<input type="file" id="file" accept="image/png">
+
+<div class="controls">
+  目标宽：<input type="number" id="w" value="64" min="1">
+  目标高：<input type="number" id="h" value="64" min="1">
+  <button id="crop">裁剪</button>
+  <button id="download">下载</button>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<script>
+const fileInput = document.getElementById('file');
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+let img = new Image();
+
+fileInput.onchange = e => {
+  const file = e.target.files[0];
+  if (!file) return;
+  img.onload = () => {
+    canvas.width = img.width;
+    canvas.height = img.height;
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.drawImage(img, 0, 0);
+  };
+  img.src = URL.createObjectURL(file);
+};
+
+document.getElementById('crop').onclick = () => {
+  const tw = parseInt(document.getElementById('w').value, 10);
+  const th = parseInt(document.getElementById('h').value, 10);
+  if (!img.width || tw <= 0 || th <= 0) return;
+  
+  // 计算缩放比例(cover模式,保证填满目标尺寸)
+  const scale = Math.max(tw / img.width, th / img.height);
+  const scaledW = img.width * scale;
+  const scaledH = img.height * scale;
+  
+  // 创建临时canvas进行缩放
+  const temp = document.createElement('canvas');
+  temp.width = scaledW;
+  temp.height = scaledH;
+  const tempCtx = temp.getContext('2d');
+  tempCtx.drawImage(img, 0, 0, scaledW, scaledH);
+  
+  // 从缩放后图像中心裁剪
+  const sx = (scaledW - tw) / 2;
+  const sy = (scaledH - th) / 2;
+  
+  canvas.width = tw;
+  canvas.height = th;
+  ctx.clearRect(0, 0, tw, th);
+  ctx.drawImage(temp, sx, sy, tw, th, 0, 0, tw, th);
+};
+
+document.getElementById('download').onclick = () => {
+  canvas.toBlob(blob => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'cropped.png';
+    a.click();
+    URL.revokeObjectURL(url);
+  }, 'image/png');
+};
+</script>
+</body>
+</html>

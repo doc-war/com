@@ -13,13 +13,13 @@
 
     <meta name="robots" content="index,follow">
 
-    <link rel="canonical" href="https://github.io/doc-war/project">
+    <link rel="canonical" href="https://github.io/doc-war/dotproject">
 
     <!-- Open Graph：用于引用与传播的一致性 -->
     <meta property="og:type" content="article">
     <meta property="og:title" content=".project - 通用项目入口协议 Project Entry Protocol">
     <meta property="og:description" content="通过 .project 文件定义逻辑项目入口，实现跨语言、跨工具的统一项目启动，解决多项目来回文件夹路径繁琐切换的最优方案，干净轻量，离散维护，中心化管理。">
-    <meta property="og:url" content="https://doc-war/projectentryprotocol">
+    <meta property="og:url" content="https://doc-war/project">
     <meta property="og:site_name" content="Project Protocol">
 
     <!-- 协议/规范的机器可理解声明 -->
@@ -184,10 +184,7 @@
         font-weight: 600;
     }
 
-    .folder::after {
-        content: "/";
-        opacity: 0.5;
-    }
+
 
     /* 侧边栏底部信息 (原 Footer 内容) */
     .sidebar-footer {
@@ -240,6 +237,12 @@
     h3 {
         margin: 2rem 0 1rem;
         color: #34495e;
+    }
+
+    .img{
+        width:100%;
+        height:auto;
+
     }
 
     /* 极简 Hero 区域 */
@@ -397,7 +400,7 @@
             <div class="tree-root">.project协议文档</div>
             <nav>
                 <ul>
-                    <li><a href="#home" class="nav-link">项目声明.md</a></li>
+                    <li><a href="#home" class="nav-link">项目声明</a></li>
                     <li><a href="#what-why" class="nav-link">为什么需要?</a></li>
                     <li class="folder">
                         <a href="#specification" class="nav-link">协议规范<sup>(v1.0.0)</sup></a>
@@ -410,11 +413,18 @@
 
                         </ul>
                     </li>
-                    <li><a href="#implementations" class="nav-link">官方实现（下载）</a></li>
+                     <li class="folder">
+                        <li><a href="#implementations" class="nav-link">官方实现（下载）</a></li>
+                        <ul>
+                            <li><a href="#product-gui" class="nav-link">GUI版本</a></li>
+                            <li><a href="#product-cli" class="nav-link">CLI版</a></li>
+                        </ul>
+                    </li>
+                    
                 </ul>
             </nav>
             <div class="sidebar-footer">
-                <a href="https://github.com/doc-war/project" target="_blank">
+                <a href="https://github.com/doc-war/dotproject" target="_blank">
                     <svg class="github-icon" viewBox="0 0 16 16">
                         <path
                             d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27.68 0 1.36.09 2 .27 1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z">
@@ -432,17 +442,17 @@
         <main>
             <section id="home" class="hero">
                 <h1>Project Entry Protocol</h1>
-                <p>项目入口协议-定义一种开放的、跨语言、跨工具的项目声明、发现与执行标准。</p>
+                <p>项目入口协议（PEP）-定义一种开放的、跨语言、跨工具的项目声明、发现与执行标准。</p>
                 <div class="quick-demo">
                     <span class="comment">// 1. 在任意目录放置标识文件声明逻辑项目</span><br>
-                    <span class="folder">E:/go项目/Doc-war系列/效率工具/v1/myapp</span><br>
+                    <span class="folder">E:/go项目/Doc-war系列/效率工具/myapp/frontend</span><br>
                     ├── <span class="file">src/</span><br>
                     └── <span class="file">.project</span><br>
                     <br>
                     <span class="comment">// 2. 在系统的任何地方直接启动</span><br>
                     <span class="cmd">$ project myapp</span><br>
                     <br>
-                    <span class="comment">// 3. 结果：启动终端自动跳转至myapp目录。</span>
+                    <span class="comment">// 3. 结果：启动终端自动cd到myapp目录。</span>
                 </div>
             </section>
 
@@ -470,47 +480,56 @@
 
             <section id="what-why">
                 <h2>为什么需要它？</h2>
-                <p>在日常开发中，一台电脑可能有几十个项目散在各级文件夹。我们经常在不同的项目间，来回切换、启动终端、执行指令。这相当繁琐。</p>
-                <pre><code>Node.js 后台服务:        D:/companyA/xxx/backend/user-service
-Node.js 管理后台前端:    D:/companyA/xxx/frontend/admin-web
-Node.js 支付沙盒项目:    D:/companyA/xxx/backend/payment/sandbox
-Node.js 文档项目:        D:/companyA/xxx/docs/
-React 实验项目:          E:/experiments/openai-test
-Go 微服务(十几个):       D:/legacy/go/order-service
-Python 数据处理脚本:     E:/scripts/data-pipeline
-知识管理                 E:/markdowns/xxxx   (使用git管理了十几个typora项目)
+                <p>在日常开发中，一台电脑可能有几十个项目散在各级文件夹。我们经常在不同的项目间，来回切换资源管理器、启动终端、执行指令，这相当繁琐。</p>
+                <pre><code>##   即便是简单的一个项目，也具备基本的结构复杂度
+Node.js 管理后台前端:       D:/companyA/xxx/admin/frontend
+Node.js 管理后台服务:       D:/companyA/xxx/admin/user-service
+Node.js 用户前端:           D:/companyA/xxx/user/frontend
+Node.js 用户后端:           D:/companyA/xxx/user/backend
+Node.js 支付沙盒项目:       D:/companyA/xxx/payment/sandbox
+vitepress 文档项目:         D:/companyA/xxx/docs/
+##   各种可能的散落
+wasm 工具项目:              D:/companyB/yyy/wasm/
+Python 数据处理脚本:        E:/scripts/data-pipeline
+Go 微服务十几个:            D:/legacy/go/order-service、......
+React 实验项目:             E:/experiments/openai-test
+Markdown 知识管理十几个     E:/markdowns/...  （博客、论文、工作、学习..）
 </code></pre>
-
-                <p>在服务器部署时，由于前后端分离、配置分离等各种原则，即便是单项目，一个最简单的网站，也非常繁琐。
-                </p>
-                <pre><code>涉及nginx、
-前台服务、前台前端、
-后台服务、后台前端、
-数据库</code></pre>
-                <p>我们需要一个干净的解决方案：足够轻量、足够灵活、不需要心智成本！</p>
+<p>并且，当项目多了之后，尤其是知识管理，容易因为忘记了存放位置而重新clone，造成多余的分叉副本。</p>
+<p>这类“繁琐”不是技术上的复杂，而是一种认知负荷和操作步骤的反复叠加。</p><br/>
+                <p>我们需要一个<b>干净</b>、<b>快捷</b>的进入目录的解决方案：</p>
+                <p>-  足够轻量！</p>
+                <p>-  足够灵活！</p>
+                <p>-  不需要心智成本！</p>
                 <br/>
-                    <h4>All you need is a declaration: this is a project!</h4>
+                    <h3>All you need is a declaration: this is a project!</h3>
                 <br />
-                    现在，你只需要在项目根目录放置一个
-                    <code>.project</code> 文件，即可通过简单的命令被发现、管理，然后通过[项目名]或[序号]快捷操作：<br/>
-                    1、启动终端<br/>
-                    2、打开资源管理器<br/>
-                    3、或typora、vscode等各种以文件夹路径为目标上下文的工具。
+                    现在，你只需要在项目根目录中放置一个
+                    <code>.project</code> 文件，即可借助简单的CLI或GUI工具被发现、管理，然后通过[项目名]或[序号]快捷进行进入操作：<br/>
+                    1、启动终端（刚需）<br/>
+                    2、打开资源管理器（刚需）<br/>
+                    3、或打开typora、vscode等各种以文件夹路径为目标上下文的常用工具。
                 </p>
 
                 <div class="feature-grid">
-                    <div class="feature-item"><strong>跨语言</strong> 适用于任何编程语言和框架，以及项目组合抽象。</div>
-                    <div class="feature-item"><strong>无侵入</strong> 只是一个配置文件，不修改现有代码。</div>
+                    <div class="feature-item"><strong>跨工具</strong> 适用于任何编程语言和框架、文档，以及项目组合抽象。</div>
+                    <div class="feature-item"><strong>无侵入</strong> 只是一个配置文件，甚至空文件，不修改现有代码。</div>
                     <div class="feature-item"><strong>环境隔离</strong> 同一个文件夹支持组合放置来隔离配置，轻松切换开发和生产配置。</div>
                 </div>
             </section>
 
             <section id="specification">
                 <h2>协议规范</h2>
+                <p>
+                        PEP协议（Project Entry Protocol）解决的是如何声明项目，以及如何规范基础配置，以避免不同实现之间的数据依赖冲突。。
+                    </p>
+                    <p>
+                        在保持一致的文件命名和配置管理基础上，支持任何人、任何工具进行任意功能体验的设计和实现。
+                    </p>
                 <article id="project-discovery">
                     <h3>项目发现</h3>
                     <p>
-                        项目发现总是从用户配置的检索根目录开始，通过搜索<code>.project</code> 文件快速重建索引。
+                        项目发现总是从用户配置的检索根目录开始，通过搜索<code>.project</code> 文件快速重建中心化索引。
                     </p>
                     <p>
                         1、协议不定义固定的扫描起点、深度、范围、忽略目标，由上层实现来选择体验策略。<br />
@@ -525,32 +544,33 @@ Python 数据处理脚本:     E:/scripts/data-pipeline
                     </p>
                     <p>
                         项目名称的确定遵循以下规则：<br />
-                        1、若协议文件显式具名，则优先使用文件名作为项目名。<br />
-                        2、若未具名，则默认使用所在文件夹名称作为项目名。<br />
+                        1、若声明文件显式具名，则优先使用文件名作为项目名。<br />
+                        2、若未具名，则默认使用其所在文件夹的名称作为项目名。<br />
                         3、允许同一个文件夹内部有多个声明文件，即支持同一个物理路径可以用不同的逻辑项目来管理进入操作。这意味着你可以借助多个具名.project文件组合来实现策略隔离。
                     </p>
                     <pre><code>D:/legacy/go/order-service
 ├── src/
-├── dev.project   # 开发环境声明
-├── test.project  # 测试环境声明
-└── prod.project  # 生产环境声明</code></pre>
+├── order-service.dev.project   # 开发环境声明
+├── order-service.test.project  # 测试环境声明
+└── order-service.prod.project  # 生产环境声明</code></pre>
                 </article>
 
                 <article id="file-format">
                     <h3>文件配置格式</h3>
                     <p>文件内容允许为空。如果配置，则必须统一遵循标准的 <code>YAML</code> 格式，且使用 <code>UTF-8</code> 编码，以确保跨上层实现的存储一致性。</p>
                     <pre><code># 示例配置
-shell: wt                  ## 优先以windows terminal启动
-isAdmin: true              ## 要求以管理员权限启动
+shell: powershell            ## 优先以powershell启动
+asAdmin: true              ## 要求以管理员权限启动
 commands:                  ## 别名配置最常用命令
     start: npm run dev
     build: ./scripts/build.sh
 </code></pre>
+                    <p>协议定义了四个基础配置，以解决最常用的终端进入需求以及能隔离冲突的扩展性需求。</p>
                 </article>
 
                 <article id="core-properties">
                     <h3>核心属性</h3>
-                    <p>-启动终端</p>
+                    <p>-启动终端，进入项目目录</p>
                     <table>
                         <thead>
                             <tr>
@@ -566,9 +586,9 @@ commands:                  ## 别名配置最常用命令
                                 <td>偏好的终端类型（如 wt, bash, powershell）。</td>
                             </tr>
                             <tr>
-                                <td><code>isAdmin</code></td>
+                                <td><code>asAdmin</code></td>
                                 <td>Boolean</td>
-                                <td>是否需要管理员/Root 权限执行。</td>
+                                <td>是否需要以管理员/Root权限执行，主要针对windows。</td>
                             </tr>
                             <tr>
                                 <td><code>commands</code></td>
@@ -577,24 +597,8 @@ commands:                  ## 别名配置最常用命令
                             </tr>
                         </tbody>
                     </table>
-                    <p>-启动其他应用</p>
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>属性名</th>
-                                <th>类型</th>
-                                <th>声明的语义</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td><code>app</code></td>
-                                <td>String</td>
-                                <td>用其他应用(比如typora、vscode)替代终端，来接管启动和接收路径上下文。<br />
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <p>附注：启动用其他以路径为目标上下文的应用(比如typora、vscode、资源管理器)的功能，因不依赖配置，协议不做约束，均有上层自由实现。</p>
+                    
                 </article>
 
                 <article id="extend-properties">
@@ -620,7 +624,7 @@ commands:                  ## 别名配置最常用命令
                     <p>
                         语义说明：<br />
                         1、协议层永远不依赖其中任何字段，所有上层功能扩展必须放入此槽内。<br />
-                        2、extensions采用命名空间隔离，每个命名空间代表一个上层产品或能力单元，且更新操作时不应该破坏其他命名空间的原值。
+                        2、extensions采用命名空间隔离，每个命名空间代表一个上层产品或能力单元，且更新操作时不应该破坏其他命名空间的原值。为降低空间冲突概率，建议使用带产品域名的空间命名规则。
                     </p>
                 </article>
 
@@ -629,28 +633,82 @@ commands:                  ## 别名配置最常用命令
 
             </section>
             
-            <section id="implementations">
+            <section id="license">
                 <h2>License</h2>
                 <p>本协议采用完全开放许可: MIT License</p>
             </section>
             <section id="implementations">
                 <h2>官方实现</h2>
-                <p>基于该协议，目前已做了上层CLI工具实现：</p>
+                <p>基于该协议，目前已做了上层工具实现：</p>
                 <div style="margin-top: 1.5rem;">
-                    <a href="https://github.com/doc-war/project">
-                        <h4 style="color:#667eea">Project (Go)</h4>
+                    <a href="https://github.com/doc-war/dotproject">
+                        <h3 style="color:#667eea">dotproject (GUI+npm分发)</h3>
                     </a>
                     <h3>核心体验</h3>
-                    <p>1、轻量级的二进制工具，自动维护环境变量，启动一次后任意目录均可识别project命令</p>
-                    <p>2、支持无参数project交互式命令，快速罗列项目，使用序号精准执行进入操作</p>
-                    <p>3、自动忽略.开头的文件夹，以及node_modules等多种主流语言的包管理目录</p>
-                    <p>4、只扫描根目录下最多5层，性能极佳</p>
-                    <p>5、高容错，如配置格式yaml解析非法，会按默认无配置处理，且有反馈体验</p>
-                    <p>6、支持全局默认配置shell，可以尽可能避免项目级配置。优先级是项目级配置>全局默认配置>工具默认配置</p>
+                    <p>1、快捷进入终端、或打开资源管理器</p>
+                    <p>2、自动忽略.开头、$开头的文件夹，以及node_modules等多种主流语言的包管理目录、编译目录、缓存目录等</p>
+                    <p>3、只扫描根目录下最多5层，性能极佳</p>
+                    <p>4、高容错，如配置格式yaml解析非法，会按默认无配置处理，且有反馈体验</p>
+                    <p>5、支持全局默认配置shell，可以尽可能避免项目级配置。优先级是项目级配置>全局默认配置>工具默认配置</p>
+                    <p>6、最近进入的项目排序优先</p>
+                </div>
+            </section>
+            <section id="product-gui">
+                <h2>GUI产品</h2>
+                <p>提供可视化的操作体验：</p>
+                <div style="margin-top: 1.5rem;">
+                    <div style="margin-top: 1.5rem;">
+                        <h3>下载方式：</h3>
+                        <p>1、进入git仓库，下载最新的release版本</p>
+                        <p>2、选择对应的操作系统版本安装</p>
+                    </div>
+                    <h3>为知识管理人员量身定制</h3>
+                    <p>1、纯本地工具，无任何外网请求</p>
+                    <p>2、清爽简洁的体验、高容错、性能极佳、支持多国语言、多操作系统</p>
+                    <p>3、但需要手动放置.project文件</p>
+                    <p>4、内置了快捷键来打开最小化到托盘的窗口ctrl+alt+P</p>
+                    <p>  -windows快捷键：Ctrl+Alt+P</p>
+                    <p>  -mac快捷键：Command+Option+P</p>
+                    <br/>
+                    <a href="https://github.com/doc-war/dotproject">
+                        <img src="../img/mac0.8.5.png" class="img" />
+                    </a>
+                </div>
+            </section>
+
+            <section id="product-cli">
+                <h2>CLI产品</h2>
+                <p>提供工程师习惯的终端操作体验：</p>
+                <div style="margin-top: 1.5rem;">
+                    <div style="margin-top: 1.5rem;">
+                        <h3>快速开始</h3>
+                        <p>1、全局安装：npm install -g dotproject</p>
+                        <p>2、执行：project</p>
+                    </div>
+                    <h3>最小化的指令集</h3>
+                    <p>1、推荐无参数project交互式命令，快速罗列项目，使用序号精准执行进入操作</p>
+                    <p>2、支持按项目名定向进入项目</p>
+                    <p>3、支持初始化声明、管理配置、打开资源管理器等基础指令</p>
                 </div>
                 <article id="cmds">
+                    <h3>标志位</h3>
+                    子命令具有最高的命中优先级，项目名需避免与其冲突。
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>flag</th>
+                                <th>说明</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><code>project --help</code></td>
+                                <td> 显示完整帮助信息与示例说明。 </td>
+                            </tr>
+                        </tbody>
+                    </table>
                     <h3>命令集</h3>
-                    子命令具有最高优先级，项目名需避免与其冲突。
+                    子命令具有最高的命中优先级，项目名需避免与其冲突。
                     <table>
                         <thead>
                             <tr>
@@ -664,10 +722,6 @@ commands:                  ## 别名配置最常用命令
                                 <td><code>project init</code></td>
 
                                 <td> 将当前目录声明为项目，交互式生成 <code>.project</code> 文件。 </td>
-                            </tr>
-                            <tr>
-                                <td><code>project search</code></td>
-                                <td> 扫描磁盘中的 <code>.project</code> 项目，并将发现结果写入本地缓存。 </td>
                             </tr>
                             <tr>
                                 <td><code>project root add|remove [path]</code></td>
@@ -684,12 +738,6 @@ commands:                  ## 别名配置最常用命令
                                 <td><code>project open &lt;project&gt;</code></td>
 
                                 <td> 打开指定项目所在目录的<span style="color:#2288ff">文件资源管理器</span>。 </td>
-                            </tr>
-                            <tr>
-
-                                <td><code>project help</code></td>
-
-                                <td> 显示完整帮助信息与示例说明。 </td>
                             </tr>
                         </tbody>
                     </table>
@@ -712,15 +760,16 @@ commands:                  ## 别名配置最常用命令
                             <tr>
                                 <td><code>project &lt;project&gt;</code></td>
                                 <td>Launch</td>
-                                <td> 启动指定项目。优先检查.project中的app字段，如有则启动app并传递路径上下文。否则默认启动终端。 </td>
+                                <td> 启动指定项目的终端。 </td>
                             </tr>
                             <tr>
-                                <td><code>project &lt;project&gt; &lt;command&gt;</code></td>
+                                <td><code>project &lt;project&gt; &lt;commandName&gt;</code></td>
                                 <td>Launch + Execute</td>
                                 <td> 启动指定项目，并在新终端中执行项目内配置的命令，如 dev、start、test 等。 </td>
                             </tr>
                         </tbody>
                     </table>
+                    
                 </article>
             </section>
 
