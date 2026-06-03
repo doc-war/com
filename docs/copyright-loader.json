@@ -1,0 +1,19 @@
+{
+  "remark":"sales是销售负责团队，developer是技术负责人,以域名为key索引copyright配置",
+  "shaodong-keji.com":{
+    "label": "技术支持",
+    "company": "湖南雾算科技",
+    "url": "https://shaodong-keji.com",
+    "sales": [ 
+      { 
+          "location": "邵东",       
+          "name": "赵远武",        
+          "phone": "15581518855"   
+      }
+    ], 
+    "developer": { 
+        "name": "zhaoliwei", 
+        "phone": "17717958635" 
+    }
+   }
+}
