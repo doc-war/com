@@ -1,0 +1,25 @@
+{
+  "comment":[
+    "business是商务负责团队，不同地点负责人不同，版本标签点击可以跳转主页。",
+    "客户端本地应该有一致的默认四要素兜底配置应对fetch失败场景：product、description、homepage、author。 "
+  ],
+  "product": "localAI工具箱",
+  "description": "免费、离线、安全的企业日常数字工具箱。",
+
+  "homepage": "https://shaodong-keji.com/localai",
+  "author": { 
+      "name": "zhaoliwei", 
+      "phone": "17717958635"
+  },
+  "company": [
+    "上海雾拓网络",
+    "湖南雾算科技"
+  ],
+  "business": [ 
+    { 
+        "location": "邵东",       
+        "name": "赵远武",        
+        "phone": "15581518855"
+    }
+  ]
+}
