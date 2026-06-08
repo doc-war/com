@@ -1,16 +1,27 @@
 {
   "comment":[
+    "统一维护整条本地用户工具的产品线关于信息。其中author是版权作者，company是其创办的公司信息，homepage是产品线主页。",
     "business是商务负责团队，不同地点负责人不同，版本标签点击可以跳转主页。",
-    "客户端本地应该有一致的默认四要素兜底配置应对fetch失败场景：product、description、homepage、author。 "
+    "客户端本地应该有一致的默认四要素兜底配置应对fetch失败场景：productLine、description、homepage、author。",
+    "producs、company、business等信息出现增补的概率高，不纳入各产品本地的默认配置。"
   ],
-  "product": "localAI工具箱",
-  "description": "免费、离线、安全的企业日常数字工具箱。",
-
-  "homepage": "https://shaodong-keji.com/localai",
+  "productLine": "localAI工具箱",
+  "description": "免费、离线、安全的企业日常数字工具箱,一系列正在增长的工具，欢迎提日常刚性需求，免费为你创造。",
   "author": { 
       "name": "zhaoliwei", 
       "phone": "17717958635"
   },
+  "homepage": "https://shaodong-keji.com/localai",
+  "products": [
+    {
+      "product": "localAI-tools",
+      "description": "基于localAI的工具集合，处理图片、二维码、文档数据之类的任务，满足企业日常办公需求。"
+    },
+    {
+      "product": "localAI_openvideo",
+      "description": "只要一段话，即可生成视频文案、素材、字幕、背景音乐，合成高清短视频。"
+    }
+  ],
   "company": [
     "上海雾拓网络",
     "湖南雾算科技"
