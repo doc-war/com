@@ -1,7 +1,9 @@
 {
   "comment":[
-    "统一维护整条本地用户工具的产品线关于信息。其中author是版权作者，company是其创办的公司信息，homepage是产品线主页。",
+    "统一维护整条本地用户工具的产品线关于信息，products是其系列产品，homepage是产品线主页，会链接不同的产品，方便用户挖掘更多软件。",
+    "author是版权作者，company是其创办的公司，共同组成copyright信息",
     "business是商务负责团队，不同地点负责人不同，版本标签点击可以跳转主页。",
+    "contact信息可以是邮箱、微信号、手机号等，方便用户联系。也可以是个人主页链接等。预留了灵活性",
     "客户端本地应该有一致的默认四要素兜底配置应对fetch失败场景：productLine、description、homepage、author。",
     "producs、company、business等信息出现增补的概率高，不纳入各产品本地的默认配置。"
   ],
@@ -9,7 +11,7 @@
   "description": "免费、离线、安全的企业日常数字工具箱,一系列正在增长的工具，欢迎提日常刚性需求，免费为你创造。",
   "author": { 
       "name": "zhaoliwei", 
-      "phone": "17717958635"
+      "contact": "yueshif"
   },
   "homepage": "https://shaodong-keji.com/localai",
   "products": [
@@ -18,7 +20,7 @@
       "description": "基于localAI的工具集合，处理图片、二维码、文档数据之类的任务，满足企业日常办公需求。"
     },
     {
-      "product": "localAI_openvideo",
+      "product": "localAI-openvideo",
       "description": "只要一段话，即可生成视频文案、素材、字幕、背景音乐，合成高清短视频。"
     }
   ],
@@ -30,7 +32,7 @@
     { 
         "location": "邵东",       
         "name": "赵远武",        
-        "phone": "15581518855"
+        "contact": "15581518855"
     }
   ]
 }
