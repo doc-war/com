@@ -1,0 +1,1034 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>data-context-card — Universal Context Projection Runtime</title>
+<meta name="description" content="声明式 data-* 协议上下文投影运行时。零依赖、框架无关、智能定位。天然适合 AI 生成页面。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "data-context-card",
+  "version": "1.0.3",
+  "description": "声明式 data-* 协议上下文投影运行时。零依赖、框架无关、智能定位。",
+  "applicationCategory": "DeveloperUtilities",
+  "operatingSystem": "All",
+  "offers": { "@type": "Offer", "price": "0" },
+  "featureList": [
+    "Template Projection",
+    "Smart Positioning",
+    "Auto Dark Mode",
+    "Dynamic DOM Support",
+    "Framework Agnostic"
+  ],
+  "installUrl": "https://www.npmjs.com/package/data-context-card",
+  "discussionUrl": "https://github.com/doc-war/data-context-card",
+  "semanticProtocol": {
+    "data-context-card": "触发元素，值为 <template> 的 ID（必需）",
+    "dcc:mount": "卡片投影完成时触发",
+    "dcc:unmount": "卡片隐藏时触发"
+  },
+  "configOptions": {
+    "offset": { "default": 12, "description": "卡片与触发元素间距 (px)" },
+    "edgePadding": { "default": 16, "description": "卡片与视口边缘间距 (px)" },
+    "hideDelay": { "default": 120, "description": "隐藏延迟 (ms)" },
+    "animationDuration": { "default": 160, "description": "动画时长 (ms)" },
+    "pc.maxWidthRatio": { "default": 0.5, "description": "PC 端最大宽度比例" },
+    "mobile.maxWidthRatio": { "default": 0.92, "description": "移动端最大宽度比例" }
+  },
+  "apiMethods": ["init", "bind", "bindAll", "unbind", "destroy", "show", "hide", "closeActive", "getProjectionSlot"]
+}
+</script>
+<style>
+:root {
+  --bg: #0f0f13;
+  --bg-card: #1a1a24;
+  --bg-code: #252530;
+  --text: #f0f0f4;
+  --text-secondary: #9ca3af;
+  --border: #2a2a3a;
+  --accent: #8b5cf6;
+  --accent-hover: #7c3aed;
+  --accent-light: rgba(139,92,246,0.12);
+  --accent-glow: rgba(139,92,246,0.1);
+  --accent-gradient: linear-gradient(135deg,#8b5cf6,#a78bfa);
+  --shadow: 0 1px 3px rgba(0,0,0,0.3);
+  --shadow-lg: 0 10px 40px rgba(0,0,0,0.4);
+  --radius: 12px;
+  --radius-sm: 8px;
+  --nav-height: 64px;
+  --sidebar-w: 340px;
+}
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #fafafa;
+    --bg-card: #fff;
+    --bg-code: #f5f5f5;
+    --text: #1a1a2e;
+    --text-secondary: #6b7280;
+    --border: #e5e7eb;
+    --accent: #7c3aed;
+    --accent-hover: #6d28d9;
+    --accent-light: rgba(124,58,237,0.08);
+    --accent-glow: rgba(124,58,237,0.15);
+    --accent-gradient: linear-gradient(135deg,#7c3aed,#a78bfa);
+    --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+    --shadow-lg: 0 10px 40px rgba(0,0,0,0.08);
+  }
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{
+  font-family:'Inter','Segoe UI',system-ui,-apple-system,sans-serif;
+  background:var(--bg);
+  color:var(--text);
+  line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+  transition:background .3s,color .3s;
+}
+a{color:var(--accent);text-decoration:none}
+a:hover{color:var(--accent-hover)}
+img{max-width:100%;display:block}
+code{
+  font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;
+  font-size:.9em;
+}
+
+/* ──────────────── Nav ──────────────── */
+nav{
+  position:sticky;top:0;z-index:100;
+  height:var(--nav-height);
+  background:var(--bg);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px;
+  backdrop-filter:blur(12px);
+  -webkit-backdrop-filter:blur(12px);
+  transition:background .3s,border-color .3s;
+}
+.nav-brand{
+  display:flex;align-items:center;gap:10px;
+  font-weight:700;font-size:18px;
+}
+.nav-brand svg{width:28px;height:28px}
+.nav-version{
+  font-size:12px;color:var(--text-secondary);
+  background:var(--bg-code);padding:4px 12px;
+  border-radius:999px;font-weight:500;
+  border:1px solid var(--border);
+}
+
+/* ──────────────── Layout ──────────────── */
+.layout{display:flex;min-height:calc(100vh - var(--nav-height))}
+
+/* ──────────────── Sidebar ──────────────── */
+.sidebar{
+  width:var(--sidebar-w);flex-shrink:0;
+  padding:40px 28px;
+  border-right:1px solid var(--border);
+  position:sticky;top:var(--nav-height);align-self:flex-start;
+  height:calc(100vh - var(--nav-height));overflow-y:auto;
+  display:flex;flex-direction:column;
+  transition:border-color .3s;
+}
+.sidebar-badge{
+  display:inline-block;font-size:12px;font-weight:600;
+  background:var(--accent-light);color:var(--accent);
+  padding:4px 14px;border-radius:999px;margin-bottom:20px;
+  letter-spacing:.3px;
+}
+.sidebar h1{
+  font-size:26px;font-weight:800;line-height:1.25;
+  letter-spacing:-.8px;margin-bottom:12px;
+}
+.sidebar h1 .hl{background:var(--accent-gradient);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.sidebar .sub{font-size:14px;font-weight:400;letter-spacing:0;display:block;margin-top:4px}
+.sidebar .desc{
+  font-size:13px;color:var(--text-secondary);
+  line-height:1.7;margin-bottom:16px;
+}
+.sidebar .ai-line{
+  font-size:13px;color:var(--text-secondary);
+  line-height:1.7;margin-bottom:24px;
+  padding:12px 14px;background:var(--accent-light);
+  border-radius:var(--radius-sm);border-left:3px solid var(--accent);
+}
+.sidebar .ai-line code{color:var(--accent);font-size:12px;font-weight:600}
+
+/* ── Concept visualization ── */
+.concept-viz{
+  background:var(--bg-card);
+  border:1px solid var(--border);
+  border-radius:var(--radius);
+  padding:24px 16px;
+  margin-bottom:24px;
+  position:relative;
+  overflow:hidden;
+  text-align:center;
+  min-height:140px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+.concept-viz .viz-trigger{
+  display:inline-flex;
+  align-items:center;gap:6px;
+  padding:6px 14px;
+  background:var(--bg);
+  border:1px solid var(--accent);
+  border-radius:6px;
+  font-size:12px;
+  font-family:'JetBrains Mono',monospace;
+  color:var(--accent);
+  cursor:pointer;
+  position:relative;
+  z-index:2;
+  transition:border-color .2s,box-shadow .2s;
+}
+.concept-viz .viz-trigger:hover{
+  box-shadow:0 0 0 1px var(--accent-glow);
+}
+.concept-viz .viz-card{
+  position:absolute;
+  top:12px;
+  left:50%;
+  transform:translateX(-50%) translateY(-8px) scale(.92);
+  background:var(--accent-gradient);
+  color:#fff;
+  font-size:11px;
+  font-weight:600;
+  padding:8px 18px;
+  border-radius:8px;
+  opacity:0;
+  transition:opacity .3s,transform .3s;
+  box-shadow:0 4px 16px var(--accent-glow);
+  white-space:nowrap;
+  z-index:1;
+}
+.concept-viz .viz-card.show{
+  opacity:1;
+  transform:translateX(-50%) translateY(0) scale(1);
+}
+.concept-viz .viz-beam{
+  position:absolute;
+  top:40%;
+  left:50%;
+  width:2px;
+  height:30%;
+  background:linear-gradient(to top,var(--accent),transparent);
+  opacity:.3;
+  transform:translateX(-50%);
+  z-index:0;
+}
+@keyframes vizPulse{
+  0%,100%{opacity:.3}
+  50%{opacity:.6}
+}
+.concept-viz .viz-beam.pulse{
+  animation:vizPulse 2s ease-in-out infinite;
+}
+
+/* ── Sidebar install ── */
+.sidebar-install{
+  display:inline-flex;align-items:center;gap:10px;
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:10px 18px;
+  font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;
+  font-size:14px;margin-top:auto;width:100%
+}
+.sidebar-install:hover{border-color:var(--accent);box-shadow:0 0 0 3px var(--accent-glow)}
+.sidebar-install .label{
+  font-family:Inter,sans-serif;font-size:11px;font-weight:600;
+  text-transform:uppercase;letter-spacing:1px;
+  color:var(--text-secondary);padding-right:6px;
+  border-right:1px solid var(--border);
+}
+.sidebar-install code{color:var(--accent);font-size:14px;flex:1}
+.copy-btn{
+  background:var(--accent);color:#fff;border:none;
+  width:30px;height:30px;border-radius:var(--radius-sm);
+  cursor:pointer;font-size:13px;display:flex;
+  align-items:center;justify-content:center;
+  transition:background .2s,transform .15s;flex-shrink:0;
+}
+.copy-btn:hover{background:var(--accent-hover);transform:scale(1.05)}
+.copy-btn:active{transform:scale(0.95)}
+
+.sidebar-features{
+  display:flex;flex-wrap:wrap;gap:6px;
+  margin-bottom:12px;
+}
+.sidebar-features span{
+  font-size:11px;font-weight:500;
+  background:var(--bg-card);border:1px solid var(--border);
+  padding:4px 10px;border-radius:999px;
+  color:var(--text-secondary);
+}
+
+.sidebar-ai{
+  margin-bottom:16px;
+}
+.sidebar-ai h3{
+  font-size:12px;font-weight:600;
+  display:flex;align-items:center;gap:4px;
+}
+.sidebar-ai p{
+  font-size:11px;color:var(--text-secondary);line-height:1.6;margin-top:4px;
+}
+.sidebar-ai p code{font-size:10px}
+.sidebar-ai-code{
+  font-size:10px;font-family:'JetBrains Mono',monospace;
+  background:var(--bg-code);padding:8px 10px;border-radius:4px;
+  margin-top:6px;line-height:1.6;overflow-x:auto;
+}
+.sidebar-ai-code .cm{color:var(--text-secondary);display:block}
+.sidebar-nav{display:none}
+
+/* ──────────────── Main Content ──────────────── */
+.main-content{flex:1;min-width:0;display:flex;flex-direction:column}
+
+/* ──────────────── Tabs ──────────────── */
+.tab-bar{
+  display:flex;border-bottom:1px solid var(--border);
+  background:var(--bg);position:sticky;top:var(--nav-height);z-index:99;
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+  transition:background .3s,border-color .3s;
+}
+.tab-btn{
+  padding:14px 24px;border:none;background:none;
+  font-family:inherit;font-size:13px;font-weight:600;
+  color:var(--text-secondary);cursor:pointer;
+  position:relative;transition:color .2s;
+  text-align:center;white-space:nowrap;
+}
+.tab-btn:hover{color:var(--text)}
+.tab-btn.active{color:var(--accent)}
+.tab-btn.active::after{
+  content:'';position:absolute;bottom:-1px;left:8px;right:8px;
+  height:2px;background:var(--accent);border-radius:2px 2px 0 0;
+}
+.tab-sub{
+  display:block;font-size:10px;font-weight:400;
+  color:var(--text-secondary);margin-top:1px;
+  opacity:0;transition:opacity .2s;
+}
+.tab-btn.active .tab-sub{opacity:.6}
+.tab-btn:hover .tab-sub{opacity:.4}
+
+/* ──────────────── Tab Content ──────────────── */
+.tab-content{display:none;padding:36px 32px 64px;max-width:900px;margin:0 auto;width:100%}
+.tab-content.active{display:block}
+.tab-content h2{font-size:22px;font-weight:700;margin-bottom:20px}
+.tab-content > .section-desc{font-size:14px;color:var(--text-secondary);margin-bottom:28px;max-width:600px}
+
+/* ──────────────── Section blocks ──────────────── */
+.section-block{
+  background:var(--bg-card);border:1px solid var(--border);
+  border-radius:var(--radius);padding:28px;
+  margin-bottom:24px;box-shadow:var(--shadow);
+  transition:background .3s,border-color .3s;
+}
+.section-block h3{
+  font-size:16px;font-weight:600;margin-bottom:10px;
+  display:flex;align-items:center;gap:8px;
+}
+.section-block h3 .icon{font-size:18px;flex-shrink:0}
+.section-block > p{color:var(--text-secondary);font-size:13px;line-height:1.7}
+
+/* ──────────────── Step list ──────────────── */
+.step-list{display:flex;flex-direction:column;gap:12px;margin-top:16px}
+.step-item{
+  display:flex;gap:16px;align-items:flex-start;
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:18px;
+}
+.step-item .step-num{
+  flex-shrink:0;width:28px;height:28px;border-radius:50%;
+  background:var(--accent);color:#fff;
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;line-height:1;
+}
+.step-item .step-body{flex:1;min-width:0}
+.step-item .step-body h4{font-size:14px;font-weight:600;margin-bottom:4px}
+.step-item .step-body p{font-size:12px;color:var(--text-secondary);line-height:1.6;margin-bottom:6px}
+.step-item .code-inline{
+  font-family:'JetBrains Mono','SF Mono',monospace;
+  font-size:12px;background:var(--bg-code);padding:10px 12px;
+  border-radius:6px;overflow-x:auto;border:1px solid var(--border);
+  line-height:1.6;
+}
+
+/* ──────────────── Code block ──────────────── */
+.code-block{
+  background:var(--bg-code);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px 18px;
+  font-family:'JetBrains Mono','SF Mono','Fira Code',monospace;
+  font-size:12px;line-height:1.7;overflow-x:auto;
+  margin:10px 0;position:relative;
+}
+.code-block .lang-label{
+  position:absolute;top:6px;right:10px;
+  font-family:Inter,sans-serif;font-size:9px;font-weight:600;
+  text-transform:uppercase;letter-spacing:.8px;
+  color:var(--text-secondary);opacity:.4;
+}
+.code-block strong{color:var(--accent)}
+.code-block .cm{color:var(--text-secondary);opacity:.5}
+
+/* ──────────────── Demo cards ──────────────── */
+.demo-grid{
+  display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px;
+}
+.demo-card{
+  border:1px solid var(--border);border-radius:var(--radius-sm);
+  overflow:hidden;
+  background:var(--bg);
+}
+.demo-card .demo-card-title{
+  padding:10px 14px 6px;font-size:13px;font-weight:700;
+  color:var(--text);line-height:1.4;
+  display:flex;align-items:center;gap:8px;
+}
+.demo-card .demo-card-title .num{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:20px;height:20px;border-radius:4px;
+  background:var(--accent-light);color:var(--accent);
+  font-size:11px;font-weight:700;
+}
+.demo-card .demo-trigger-wrap{
+  position:relative;overflow:hidden;
+  min-height:100px;background:var(--bg-card);
+  display:flex;align-items:center;justify-content:center;
+  padding:20px;
+  cursor:default;
+}
+.demo-card .demo-footer{
+  padding:10px 14px;font-size:12px;font-weight:500;
+  border-top:1px solid var(--border);line-height:1.5;
+}
+.demo-card .demo-footer code{
+  font-size:11px;font-weight:400;color:var(--text-secondary);
+  display:block;margin-top:1px;
+}
+
+/* Demo trigger styles */
+.demo-trigger-plain{
+  display:inline-block;
+  padding:8px 16px;
+  background:var(--accent-light);
+  color:var(--accent);
+  border:1px solid var(--accent);
+  border-radius:6px;
+  font-size:13px;
+  font-weight:500;
+  cursor:pointer;
+  transition:box-shadow .2s;
+}
+
+.demo-trigger-rich{
+  display:flex;
+  align-items:center;
+  gap:16px;
+  padding:12px 16px;
+  width:100%;
+  cursor:pointer;
+}
+.demo-trigger-rich img{
+  width:48px;height:48px;
+  border-radius:6px;object-fit:cover;
+  flex-shrink:0;
+}
+.demo-trigger-rich .rich-info{
+  flex:1;min-width:0;
+}
+.demo-trigger-rich .rich-title{
+  font-size:13px;font-weight:600;
+  color:var(--text);
+}
+.demo-trigger-rich .rich-desc{
+  font-size:11px;
+  color:var(--text-secondary);
+  margin-top:2px;
+}
+.demo-trigger-rich .trigger-link{
+  padding:4px 8px;
+}
+
+.demo-trigger-table{
+  width:100%;border-collapse:collapse;
+  font-size:12px;
+  cursor:default;
+}
+.demo-trigger-table th,.demo-trigger-table td{
+  padding:8px 12px;
+  border-bottom:1px solid var(--border);
+  text-align:left;
+}
+.demo-trigger-table th{
+  font-size:10px;font-weight:600;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-secondary);
+}
+.demo-trigger-table .row-trigger{
+  cursor:pointer;
+}
+
+.demo-trigger-code{
+  text-align:left;
+  width:100%;
+}
+.demo-trigger-code .con{
+  font-size:11px;color:var(--text-secondary);
+  font-family:'JetBrains Mono',monospace;
+  padding:8px 12px;
+  background:var(--bg-code);
+  border:1px solid var(--border);
+  border-radius:4px;
+  cursor:pointer;
+}
+.demo-trigger-code .event-log{
+  margin-top:8px;height:32px;
+  font-size:11px;color:var(--accent);
+  font-family:'JetBrains Mono',monospace;
+}
+
+/* ──────────────── Tables ──────────────── */
+.table-wrap{overflow-x:auto;margin:10px 0}
+.api-table{
+  width:100%;border-collapse:collapse;font-size:13px;
+}
+.api-table th,.api-table td{
+  text-align:left;padding:8px 14px;
+  border-bottom:1px solid var(--border);
+}
+.api-table th{
+  font-weight:600;font-size:11px;text-transform:uppercase;
+  letter-spacing:.5px;color:var(--text-secondary);
+}
+.api-table td{color:var(--text);font-family:'JetBrains Mono','SF Mono',monospace;font-size:12px}
+.api-table tr:last-child td{border-bottom:none}
+.api-table td:first-child{font-weight:600;color:var(--accent)}
+
+/* ──────────────── Framework grid ──────────────── */
+.fw-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:14px}
+.fw-item{
+  background:var(--bg);border:1px solid var(--border);
+  border-radius:var(--radius-sm);padding:14px;
+}
+.fw-item .fw-name{
+  font-size:12px;font-weight:600;color:var(--accent);margin-bottom:4px;
+  text-transform:uppercase;letter-spacing:.5px;
+}
+.fw-item .code-inline{
+  font-family:'JetBrains Mono','SF Mono',monospace;font-size:11px;
+  background:var(--bg-code);padding:8px 10px;border-radius:4px;
+  margin-top:4px;overflow-x:auto;border:1px solid var(--border);
+  line-height:1.6;
+}
+
+/* ──────────────── Footer ──────────────── */
+footer{
+  border-top:1px solid var(--border);
+  padding:28px 32px;text-align:center;
+  background:var(--bg-card);transition:background .3s,border-color .3s;
+}
+footer .footer-inner{max-width:960px;margin:0 auto}
+footer p{color:var(--text-secondary);font-size:13px}
+footer .footer-links{display:flex;justify-content:center;gap:20px;margin-top:10px;flex-wrap:wrap}
+footer .footer-links a{font-size:12px;font-weight:500;display:flex;align-items:center;gap:6px}
+footer .footer-links .sep{color:var(--border);font-size:10px;display:flex;align-items:center}
+
+/* ──────────────── Responsive ──────────────── */
+@media(max-width:900px){
+  .layout{flex-direction:column}
+  .sidebar{border-right:none;border-bottom:1px solid var(--border)}
+  .tab-content{padding:24px 16px 48px}
+  .fw-grid,.demo-grid{grid-template-columns:1fr}
+}
+@media(max-width:768px){
+  nav{padding:0 16px}
+  .tab-btn{padding:10px 16px;font-size:12px}
+  .section-block{padding:20px}
+}
+@media(min-width:901px){
+  .sidebar{-ms-overflow-style:none;scrollbar-width:none}
+  .sidebar::-webkit-scrollbar{display:none}
+}
+
+/* ──────────────── Animations ──────────────── */
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.tab-content.active{animation:fadeIn .25s ease-out}
+</style>
+</head>
+<body>
+
+<!-- ════════════ Nav ════════════ -->
+<nav>
+  <div class="nav-brand">
+    <svg viewBox="0 0 28 28" fill="none">
+      <rect x="3" y="8" width="22" height="16" rx="4" stroke="url(#g)" stroke-width="1.5" fill="rgba(139,92,246,.08)"/>
+      <path d="M14 2 L14 8 M10 4 L14 8 L18 4" stroke="url(#g)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" opacity=".6"/>
+      <rect x="7" y="12" width="14" height="2" rx="1" fill="url(#g)" opacity=".4"/>
+      <rect x="7" y="16" width="10" height="2" rx="1" fill="url(#g)" opacity=".3"/>
+      <defs>
+        <linearGradient id="g" x1="0" y1="0" x2="28" y2="28">
+          <stop offset="0%" stop-color="#8b5cf6"/>
+          <stop offset="100%" stop-color="#a78bfa"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    data-context-card
+  </div>
+  <span class="nav-version">v1.0.3</span>
+</nav>
+
+<!-- ════════════ Layout ════════════ -->
+<div class="layout">
+
+  <!-- ─── Left Sidebar ─── -->
+  <aside class="sidebar">
+    <div class="sidebar-badge">Universal Projection Runtime</div>
+    <h1>声明式 <span class="hl">data-context-card</span> 协议<br></h1>
+    <p class="desc">零依赖、框架无关。<br>元素声明触发、模板定义内容、智能定位投影。</p>
+
+    <div class="ai-line">
+      <span class="sub">为AI自动化生成而设计</span>LLM 只需声明
+      <code>data-context-card</code> + <code>&lt;template&gt;</code> 
+      ，无需操心交互与定位
+    </div>
+
+   
+
+    <div class="sidebar-features">
+      <span>Template Projection</span>
+      <span>Smart Positioning</span>
+      <span>Auto Dark Mode</span>
+      <span>Dynamic DOM</span>
+      <span>Framework Agnostic</span>
+    </div>
+
+    
+  </aside>
+
+  <!-- ─── Right: Tab Bar + Content ─── -->
+  <main class="main-content">
+
+    <nav class="tab-bar">
+      <button class="tab-btn active" data-tab="core">
+        快速上手
+        <span class="tab-sub">三步集成 · 声明即投影</span>
+      </button>
+      <button class="tab-btn" data-tab="demo">
+        真实效果
+        <span class="tab-sub">四个应用示例</span>
+      </button>
+      <button class="tab-btn" data-tab="docs">
+        文档
+        <span class="tab-sub">协议 · 配置 · 进阶</span>
+      </button>
+    </nav>
+
+    <!-- ════════════ Tab 1: 快速上手 ════════════ -->
+    <article class="tab-content active" id="tab-core">
+
+      <section class="section-block">
+        <h3><span class="icon">🚀</span> 三步集成</h3>
+        <div class="step-list">
+          <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-body">
+              <h4>引入框架</h4>
+              <p>通过 <code>&lt;script defer&gt;</code> 加载，内联执行初始化。</p>
+              <div class="code-inline">&lt;script defer src="data-context-card.umd.js" onload="DataContextCard.init()"&gt;&lt;/script&gt;</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-body">
+              <h4>定义模板</h4>
+              <p>创建 <code>&lt;template&gt;</code> 作为投影内容。</p>
+              <div class="code-inline">&lt;template id="card"&gt;
+  &lt;div&gt;投影内容&lt;/div&gt;
+&lt;/template&gt;</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-body">
+              <h4>声明触发</h4>
+              <p>给触发元素添加 <code>data-context-card</code> 属性，值为模板 ID。</p>
+              <div class="code-inline">&lt;span <strong>data-context-card</strong>="card"&gt;悬停查看&lt;/span&gt;</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </article>
+
+    <!-- ════════════ Tab 2: 真实效果 ════════════ -->
+    <article class="tab-content" id="tab-demo">
+
+      <p class="section-desc">以下四个示例基于真实的 <code>data-context-card</code> 协议。将鼠标悬停在触发区域上即可看到上下文投影卡片。</p>
+
+      <div class="demo-grid">
+        <!-- Demo 1: 基础提示卡 -->
+        <figure class="demo-card">
+          <figcaption class="demo-card-title"><span class="num">1</span> 基础文本投影</figcaption>
+          <div class="demo-trigger-wrap">
+            <span class="demo-trigger-plain" data-context-card="demo-tooltip">悬停查看提示</span>
+          </div>
+          <figcaption class="demo-footer">
+            触发元素：&lt;span class="demo-trigger-plain" data-context-card="demo-tooltip"&gt;
+            <code>最简单的文本投影场景，适合工具提示、帮助信息</code>
+          </figcaption>
+        </figure>
+
+        <!-- Demo 2: 富媒体卡片 -->
+        <figure class="demo-card">
+          <figcaption class="demo-card-title"><span class="num">2</span> 富媒体卡片</figcaption>
+          <div class="demo-trigger-wrap" style="padding:12px">
+            <div class="demo-trigger-rich">
+              <img src="https://picsum.photos/seed/dcc/96/96" alt="thumb">
+              <div class="rich-info">
+                <div class="rich-title">城市天际线</div>
+                <div class="rich-desc">悬停查看完整详情卡片</div>
+              </div>
+              <span class="trigger-link" data-context-card="demo-media" style="font-size:11px;color:var(--accent);flex-shrink:0">投影 &rang;</span>
+            </div>
+          </div>
+          <figcaption class="demo-footer">
+             触发元素：&lt;div class="demo-trigger-rich"&gt; … &lt;span data-context-card="demo-media"&gt;投影 ›&lt;/span&gt;
+            <code>悬停「投影 ›」时投影图片、文字描述与交互按钮的完整卡片</code>
+          </figcaption>
+        </figure>
+
+        <!-- Demo 3: 表格行 -->
+        <figure class="demo-card">
+          <figcaption class="demo-card-title"><span class="num">3</span> 表格行详情</figcaption>
+          <div class="demo-trigger-wrap" style="padding:12px">
+            <table class="demo-trigger-table">
+              <thead><tr><th>项目</th><th>状态</th><th>进度</th></tr></thead>
+              <tbody>
+                <tr class="row-trigger" data-context-card="demo-table">
+                  <td>框架核心重构</td>
+                  <td><span style="color:#22c55e">●</span> 进行中</td>
+                  <td>75%</td>
+                </tr>
+                <tr style="opacity:.4"><td>单元测试覆盖</td><td><span style="color:#eab308">●</span> 待办</td><td>30%</td></tr>
+                <tr style="opacity:.4"><td>文档编写</td><td><span style="color:#eab308">●</span> 待办</td><td>10%</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <figcaption class="demo-footer">
+             触发元素：&lt;tr data-context-card="demo-table"&gt; (整行)
+            <code>表格行悬停显示任务详情投影卡片，适合后台管理系统</code>
+          </figcaption>
+        </figure>
+
+        <!-- Demo 4: 事件控制台 -->
+        <figure class="demo-card">
+          <figcaption class="demo-card-title"><span class="num">4</span> 事件监听 + Portal</figcaption>
+          <div class="demo-trigger-wrap" style="flex-direction:column;gap:8px">
+            <div class="demo-trigger-code">
+              <div class="con" data-context-card="demo-events">悬停触发 dcc:mount 事件</div>
+              <div class="event-log" id="eventLog">等待事件...</div>
+            </div>
+          </div>
+          <figcaption class="demo-footer">
+            触发元素：&lt;div class="con" data-context-card="demo-events"&gt;
+            <code>框架在 mount/unmount 时触发自定义事件，方便 React/Vue Portal 集成</code>
+          </figcaption>
+        </figure>
+      </div>
+
+    </article>
+
+    <!-- ════════════ Tab 3: 文档 ════════════ -->
+    <article class="tab-content" id="tab-docs">
+
+      <!-- 核心协议 -->
+      <section class="section-block">
+        <h3><span class="icon">🎯</span> 核心协议 <span style="font-size:10px;font-weight:400;color:var(--text-secondary)">（必须了解）</span></h3>
+        <div class="table-wrap">
+          <table class="api-table">
+            <thead><tr><th>属性</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>data-context-card</code>="<em>id</em>"</td><td>标记触发元素，值为 &lt;template&gt; 的 ID</td></tr>
+              <tr><td><code>data-context-card-size</code>="<em>N</em>"</td><td>覆盖默认 25vw 尺寸（如 <code>40</code> → 40vw）</td></tr>
+              <tr><td><code>&lt;template id="<em>id</em>"&gt;</code></td><td>定义投影内容，框架自动克隆到浮动卡片</td></tr>
+              <tr><td><code>DataContextCard.init()</code></td><td>激活运行时，扫描所有 <code>[data-context-card]</code> 并绑定</td></tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 常用配置 -->
+      <section class="section-block">
+        <h3><span class="icon">⚙️</span> 常用配置 <span style="font-size:10px;font-weight:400;color:var(--text-secondary)">（建议了解）</span></h3>
+        <p style="margin-bottom:12px">初始化前修改 <code>DataContextCard.config</code>：</p>
+        <div class="table-wrap">
+          <table class="api-table">
+            <thead><tr><th>配置项</th><th>默认值</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td>offset</td><td>12</td><td>卡片与触发元素的间距 (px)</td></tr>
+              <tr><td>edgePadding</td><td>16</td><td>卡片与视口边缘的最小间距 (px)</td></tr>
+              <tr><td>hideDelay</td><td>120</td><td>隐藏延迟 (ms)</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="code-block" style="margin-top:10px">DataContextCard.config.offset = 16
+DataContextCard.init()</div>
+
+        <h4 style="font-size:13px;font-weight:600;margin:20px 0 8px">自定义事件</h4>
+        <div class="table-wrap">
+          <table class="api-table">
+            <thead><tr><th>事件</th><th>说明</th></tr></thead>
+            <tbody>
+              <tr><td><code>dcc:mount</code></td><td>卡片渲染完成时触发。外部框架（React/Vue 等）可监听此事件，获知何时将子组件挂载到卡片 DOM 内。<br><code>e.detail.mode === 'template'</code> 表示内容来自模板克隆；<code>'portal'</code> 表示未找到模板，等待外部注入。</td></tr>
+              <tr><td><code>dcc:unmount</code></td><td>卡片即将隐藏时触发，外部框架在此事件中执行清理（卸载 Portal 子组件、释放资源等）</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="code-block" style="margin-top:10px">document.getElementById('data-context-card-container')
+  .addEventListener('dcc:mount', (e) => {
+    console.log('mode:', e.detail.mode) <span class="cm">// 'template' | 'portal'</span>
+  })</div>
+      </section>
+
+      <!-- 进阶（折叠式卡片） -->
+      <section class="section-block">
+        <h3><span class="icon">🔧</span> 进阶 <span style="font-size:10px;font-weight:400;color:var(--text-secondary)">（按需查阅）</span></h3>
+
+        <details style="margin-bottom:12px">
+          <summary style="cursor:pointer;font-weight:600;font-size:13px;padding:6px 0">PC 端尺寸微调</summary>
+          <div class="table-wrap" style="margin-top:8px">
+            <table class="api-table">
+              <thead><tr><th>配置项</th><th>默认</th><th>说明</th></tr></thead>
+              <tbody>
+                <tr><td>pc.minWidth</td><td>280</td><td>卡片最小宽度 (px)</td></tr>
+                <tr><td>pc.maxWidth</td><td>480</td><td>卡片最大宽度 (px)</td></tr>
+                <tr><td>pc.maxHeight</td><td>560</td><td>卡片最大高度 (px)</td></tr>
+                <tr><td>mobile.maxWidthRatio</td><td>0.92</td><td>移动端最大宽度占视口比</td></tr>
+                <tr><td>mobile.maxHeightRatio</td><td>0.75</td><td>移动端最大高度占视口比</td></tr>
+                <tr><td>animationDuration</td><td>160</td><td>动画时长 (ms)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </details>
+
+        <details style="margin-bottom:12px">
+          <summary style="cursor:pointer;font-weight:600;font-size:13px;padding:6px 0">API 方法</summary>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:12px">
+            <div><code style="font-size:13px">DataContextCard.init(selector?)</code><br><span style="font-size:12px;color:var(--text-secondary)">全局初始化，默认选择器 <code>[data-context-card]</code></span></div>
+            <div><code style="font-size:13px">DataContextCard.bind(el)</code><br><span style="font-size:12px;color:var(--text-secondary)">手动绑定单个元素</span></div>
+            <div><code style="font-size:13px">DataContextCard.bindAll(selector)</code><br><span style="font-size:12px;color:var(--text-secondary)">手动批量绑定</span></div>
+            <div><code style="font-size:13px">DataContextCard.unbind(el)</code><br><span style="font-size:12px;color:var(--text-secondary)">解绑单个元素</span></div>
+            <div><code style="font-size:13px">DataContextCard.show(el)</code><br><span style="font-size:12px;color:var(--text-secondary)">编程式显示</span></div>
+            <div><code style="font-size:13px">DataContextCard.hide()</code><br><span style="font-size:12px;color:var(--text-secondary)">编程式隐藏（带延迟）</span></div>
+            <div><code style="font-size:13px">DataContextCard.closeActive()</code><br><span style="font-size:12px;color:var(--text-secondary)">立即强制隐藏</span></div>
+            <div><code style="font-size:13px">DataContextCard.getProjectionSlot()</code><br><span style="font-size:12px;color:var(--text-secondary)">获取内容容器，用于 Portal 接管</span></div>
+            <div><code style="font-size:13px">DataContextCard.destroy()</code><br><span style="font-size:12px;color:var(--text-secondary)">完全销毁运行时（SPA 路由切换使用）</span></div>
+          </div>
+        </details>
+
+        <details style="margin-bottom:12px">
+          <summary style="cursor:pointer;font-weight:600;font-size:13px;padding:6px 0">框架集成示例</summary>
+          <div class="fw-grid" style="margin-top:8px">
+            <div class="fw-item">
+              <div class="fw-name">HTML (UMD)</div>
+              <div class="code-inline">&lt;script src="data-context-card.umd.js"&gt;&lt;/script&gt;
+&lt;script&gt;DataContextCard.init()&lt;/script&gt;</div>
+            </div>
+            <div class="fw-item">
+              <div class="fw-name">ESM</div>
+              <div class="code-inline">import DataContextCard from 'data-context-card'
+DataContextCard.init()</div>
+            </div>
+            <div class="fw-item">
+              <div class="fw-name">React</div>
+              <div class="code-inline">useEffect(() => {
+  DataContextCard.init()
+  return () => DataContextCard.destroy()
+}, [])</div>
+            </div>
+            <div class="fw-item">
+              <div class="fw-name">Vue</div>
+              <div class="code-inline">onMounted(() => DataContextCard.init())
+onUnmounted(() => DataContextCard.destroy())</div>
+            </div>
+          </div>
+        </details>
+
+        <details>
+          <summary style="cursor:pointer;font-weight:600;font-size:13px;padding:6px 0">其他</summary>
+          <div style="margin-top:8px;display:flex;flex-direction:column;gap:8px;font-size:12px">
+            <div><code>data-portal</code> — 标记框架不管理的 DOM 容器。当模板内部有 <code>data-portal</code> 元素时，卡片隐藏<i>不会</i>清空该容器内容，确保外部框架（React Portal、Vue Teleport 等）渲染进去的子组件在显示/隐藏切换中保持状态不丢失。</div>
+            <div><code>data-dcc-close</code> — 模板内关闭按钮标记</div>
+            <div>📱 移动端自动识别触摸设备，点击切换显示/隐藏</div>
+            <div>📘 内置 TypeScript 类型声明，无需 <code>@types</code></div>
+            <div>🌍 支持 Chrome · Edge · Safari · Firefox 等所有现代浏览器</div>
+          </div>
+        </details>
+      </section>
+
+    </article>
+
+  </main><!-- /main-content -->
+</div><!-- /layout -->
+
+<!-- ════════════ Footer ════════════ -->
+<footer>
+  <div class="footer-inner">
+    <p>零依赖 · 开箱即用 · &copy; zhaoliwei</p>
+    <div class="footer-links">
+      <a href="https://github.com/doc-war/data-context-card" target="_blank" rel="noopener">GitHub</a>
+      <a href="https://www.npmjs.com/package/data-context-card" target="_blank" rel="noopener">npm</a>
+      <a href="https://doc-war.com" target="_blank" rel="noopener">Homepage</a>
+      <span class="sep">|</span>
+      <a href="https://doc-war.com/data-context-card" target="_blank" rel="noopener" style="font-size:11px;opacity:.7">data-preview 大图预览框架</a>
+      <span class="sep">|</span>
+      <span style="font-size:11px;color:var(--text-secondary)">MIT License</span>
+    </div>
+  </div>
+</footer>
+
+<!-- ════════════ Templates ════════════ -->
+
+<!-- Demo 1: Tooltip -->
+<template id="demo-tooltip">
+  <div style="padding:16px;min-width:180px">
+    <div style="font-weight:600;font-size:14px;margin-bottom:6px;display:flex;align-items:center;gap:6px">
+      <span>💡</span> 提示信息
+    </div>
+    <p style="font-size:12px;color:var(--text-secondary,#666);line-height:1.6">
+      这是通过 <code>data-context-card</code> 协议投影的基础文本卡片。
+      框架自动计算最佳显示位置，无需手动定位。
+    </p>
+  </div>
+</template>
+
+<!-- Demo 2: Rich Media -->
+<template id="demo-media">
+  <div style="width:320px;overflow:hidden">
+    <img src="https://picsum.photos/seed/dcc2/640/360" alt="banner" style="width:100%;height:auto;display:block">
+    <div style="padding:16px">
+      <h3 style="font-size:16px;font-weight:700;margin-bottom:6px">城市天际线 · 城市摄影</h3>
+      <p style="font-size:12px;color:var(--text-secondary,#666);line-height:1.6;margin-bottom:12px">
+        收藏级高清摄影作品，展现城市建筑的几何美学与光影变化。
+      </p>
+      <div style="display:flex;gap:8px">
+        <span style="font-size:11px;padding:3px 10px;border-radius:4px;background:#8b5cf6;color:#fff;font-weight:500">摄影</span>
+        <span style="font-size:11px;padding:3px 10px;border-radius:4px;background:var(--bg-code,#eee);color:var(--text-secondary,#666)">4K</span>
+        <span style="font-size:11px;padding:3px 10px;border-radius:4px;background:var(--bg-code,#eee);color:var(--text-secondary,#666)">城市</span>
+      </div>
+    </div>
+  </div>
+</template>
+
+<!-- Demo 3: Table detail -->
+<template id="demo-table">
+  <div style="padding:16px;min-width:280px">
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:12px">
+      <h4 style="font-size:14px;font-weight:700">框架核心重构</h4>
+      <span style="font-size:11px;padding:2px 10px;border-radius:999px;background:rgba(34,197,94,.15);color:#22c55e;font-weight:600">进行中</span>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px">
+      <div><span style="color:var(--text-secondary,#666)">负责人</span><br>张工</div>
+      <div><span style="color:var(--text-secondary,#666)">优先级</span><br>P0 紧急</div>
+      <div><span style="color:var(--text-secondary,#666)">截止</span><br>2026-06-20</div>
+      <div><span style="color:var(--text-secondary,#666)">进度</span><br>75%</div>
+    </div>
+    <div style="margin-top:12px;height:6px;background:var(--bg-code,#eee);border-radius:3px;overflow:hidden">
+      <div style="width:75%;height:100%;background:linear-gradient(90deg,#8b5cf6,#a78bfa);border-radius:3px"></div>
+    </div>
+    <p style="font-size:11px;color:var(--text-secondary,#666);margin-top:12px;line-height:1.6">
+      已完成：定位算法重构、DOM 构建优化、主题同步逻辑。剩余：边缘 case 处理、性能测试。
+    </p>
+  </div>
+</template>
+
+<!-- Demo 4: Events -->
+<template id="demo-events">
+  <div style="padding:16px;min-width:200px">
+    <div style="font-weight:600;font-size:13px;margin-bottom:8px">dcc:mount 已触发</div>
+    <p style="font-size:11px;color:var(--text-secondary,#666);line-height:1.6">
+      投影卡片已成功渲染。监听 <code>dcc:mount</code> / <code>dcc:unmount</code> 事件，可无缝集成 React Portal、Vue Teleport。
+    </p>
+  </div>
+</template>
+
+<!-- ════════════ Scripts ════════════ -->
+<script defer src="./index.js"></script>
+<script>
+// ── Tab switching ──
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active') })
+  document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active') })
+  var content = document.getElementById('tab-' + tabId)
+  var btn = document.querySelector('.tab-btn[data-tab="' + tabId + '"]')
+  if (content) content.classList.add('active')
+  if (btn) btn.classList.add('active')
+}
+
+document.querySelectorAll('.tab-btn').forEach(function(btn) {
+  btn.addEventListener('click', function() { switchTab(btn.dataset.tab) })
+})
+
+// ── Sidebar concept animation ──
+;(function() {
+  var trigger = document.getElementById('vizTrigger')
+  var card = document.getElementById('vizCard')
+  var beam = document.getElementById('vizBeam')
+  if (!trigger) return
+  trigger.addEventListener('mouseenter', function() {
+    card.classList.add('show')
+    beam.classList.add('pulse')
+  })
+  trigger.addEventListener('mouseleave', function() {
+    card.classList.remove('show')
+    beam.classList.remove('pulse')
+  })
+})()
+
+// ── Demo 4: Event log ──
+;(function() {
+  var log = document.getElementById('eventLog')
+  if (!log) return
+  var cardEl = null
+  function waitForCard() {
+    cardEl = document.getElementById('data-context-card-container')
+    if (cardEl) {
+      cardEl.addEventListener('dcc:mount', function(e) {
+        log.textContent = 'dcc:mount mode=' + e.detail.mode
+        log.style.color = ''
+      })
+      cardEl.addEventListener('dcc:unmount', function() {
+        log.textContent = 'dcc:unmount'
+        log.style.color = ''
+      })
+    } else {
+      setTimeout(waitForCard, 100)
+    }
+  }
+  waitForCard()
+})()
+
+// ── Init DataContextCard ──
+document.addEventListener('DOMContentLoaded', function() {
+  var dcc = window.DataContextCard
+  if (dcc) {
+    dcc.config.offset = 12
+    dcc.config.edgePadding = 16
+    dcc.config.pc.maxWidth = 420
+    dcc.init()
+  }
+})
+</script>
+</body>
+</html>
