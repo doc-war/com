@@ -1,0 +1,445 @@
+/* ==========================================================================
+   1. 基础全局初始化 (新增：确保不同设备和浏览器下表现一致)
+   ========================================================================== */
+html, body {
+  margin: 0;
+  padding: 0;
+  background-color: #fafafa; /* 微灰背景，能更好地烘托出纯白卡片的质感 */
+  -webkit-font-smoothing: antialiased; /* 让字体渲染更细腻 */
+}
+
+/* ==========================================================================
+   2. 布局骨架 (.outer & .wrap)
+   ========================================================================== */
+.outer { 
+  max-width: 760px; 
+  margin: 20px auto; 
+  padding: 0 20px; 
+  box-sizing: border-box; 
+}
+
+@media (max-width: 600px) { 
+  .outer { 
+    max-width: 100%; 
+    margin: 0; 
+    padding: 0; 
+  } 
+}
+
+.wrap { 
+  padding: 1.5rem 0; 
+  font-family: -apple-system, BlinkMacSystemFont, "PingFang SC", "Microsoft YaHei", sans-serif; 
+}
+
+/* ==========================================================================
+   3. 版块与卡片 (克制灰度 / 0.5px 细边框 / 12px 圆角)
+   ========================================================================== */
+.section { 
+  margin-bottom: 2rem; 
+}
+
+.section-title { 
+  font-size: 12px; 
+  font-weight: 500; 
+  color: #888; 
+  letter-spacing: 0.08em; 
+  text-transform: uppercase; 
+  margin-bottom: 1rem; 
+  
+  /* 新增：如果要在小标题右侧加 [ 扩展按钮 ]，这两行可以让它们两端对齐 */
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.card { 
+  background: #fff; 
+  border: 0.5px solid #e0e0e0; 
+  border-radius: 12px; 
+  padding: 1rem 1.25rem; 
+  margin-bottom: 10px; 
+}
+
+.card-title { 
+  font-size: 15px; 
+  font-weight: 500; 
+  color: #111; 
+  margin-bottom: 6px; 
+}
+
+.card-body { 
+  font-size: 14px; 
+  color: #555; 
+  line-height: 1.7; 
+}
+
+/* ==========================================================================
+   4. 内容组件 (网格 / 高亮块 / 步骤条)
+   ========================================================================== */
+.row { 
+  display: grid; 
+  grid-template-columns: 1fr 1fr; 
+  gap: 10px; 
+}
+
+/* 新增：手机端把网格变成单列，防止两列卡片在窄屏下挤压变形 */
+@media (max-width: 500px) {
+  .row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.highlight { 
+  background: #f5f5f3; 
+  border-radius: 8px; 
+  padding: 0.75rem 1rem; 
+  font-size: 14px; 
+  color: #111; 
+  line-height: 1.7; 
+}
+
+.step { 
+  display: flex; 
+  gap: 12px; 
+  align-items: flex-start; 
+  margin-bottom: 10px; 
+}
+
+.step:last-child {
+  margin-bottom: 0;
+}
+
+.step-num { 
+  width: 24px; 
+  height: 24px; 
+  border-radius: 50%; 
+  background: #f0f0ee; 
+  border: 0.5px solid #d0d0cc; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center; 
+  font-size: 12px; 
+  font-weight: 500; 
+  color: #666; 
+  flex-shrink: 0; 
+  margin-top: 2px; 
+}
+
+.step-content { 
+  font-size: 14px; 
+  color: #555; 
+  line-height: 1.6; 
+}
+
+.step-content strong { 
+  color: #111; 
+  font-weight: 500; 
+}
+
+.divider { 
+  border: none; 
+  border-top: 0.5px solid #e0e0e0; 
+  margin: 1.5rem 0; 
+}
+
+/* ==========================================================================
+   5. 标签与按钮 (浅背景+深字色 / 交互按钮)
+   ========================================================================== */
+.tag { 
+  display: inline-block; 
+  font-size: 12px; 
+  padding: 2px 10px; 
+  border-radius: 6px; 
+  margin-right: 6px; 
+  margin-bottom: 4px; 
+}
+
+.tag-blue  { background: #E6F1FB; color: #0C447C; }
+.tag-teal  { background: #E1F5EE; color: #085041; }
+.tag-amber { background: #FAEEDA; color: #633806; }
+.tag-coral { background: #FAECE7; color: #712B13; }
+
+/* 新增：专门给小标题右侧 [ 扩展按钮 ] 准备的样式，保持克制不刺眼 */
+.extend-btn {
+  font-size: 13px;
+  color: #0C447C;
+  font-weight: 400;
+  cursor: pointer;
+  text-transform: none;
+  letter-spacing: normal;
+  text-decoration: none;
+}
+.extend-btn:hover {
+  text-decoration: underline;
+}
+
+/* ==========================================================================
+   6. 页面标题栏 (面包屑风格 / 大气留白 / 非传统tab)
+   ========================================================================== */
+.page-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(255,255,255,0.96);
+  border-bottom: 0.5px solid #e0e0e0;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+.page-header-inner {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 0 20px;
+  height: 52px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.header-home-link {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 14px;
+  color: #888;
+  text-decoration: none;
+  transition: color 0.2s;
+  line-height: 1;
+}
+.header-home-link:hover {
+  color: #111;
+}
+.header-home-arrow {
+  font-size: 18px;
+  line-height: 1;
+  font-weight: 300;
+}
+.header-slash {
+  color: #ddd;
+  font-size: 16px;
+  font-weight: 200;
+}
+.header-current-page {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111;
+}
+.header-brand {
+  font-size: 15px;
+  font-weight: 500;
+  color: #111;
+  letter-spacing: 0.02em;
+}
+
+@media (max-width: 500px) {
+  .page-header-inner {
+    height: 48px;
+    padding: 0 16px;
+  }
+.header-home-link {
+    font-size: 13px;
+  }
+  .header-current-page {
+    font-size: 14px;
+  }
+}
+
+/* ==========================================================================
+   7. 页脚
+   ========================================================================== */
+.page-footer {
+  border-top: 0.5px solid #e0e0e0;
+  margin-top: 3rem;
+  padding: 1.5rem 0;
+}
+.page-footer-inner {
+  max-width: 660px;
+  margin: 0 auto;
+  padding: 0 20px;
+  text-align: center;
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.8;
+}
+
+@media (max-width: 500px) {
+  .page-footer {
+    padding: 1.25rem 0;
+  }
+  .page-footer-inner {
+    padding: 0 16px;
+    font-size: 11px;
+  }
+}
+
+/* ==========================================================================
+   8. FAQ 模块
+   ========================================================================== */
+
+.faq-card {
+  background: #fff;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 10px;
+}
+
+.faq-q {
+  padding: 0.85rem 1.25rem;
+  border-bottom: 0.5px solid #f0f0ee;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.q-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #bbb;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.q-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+  line-height: 1.5;
+}
+
+.faq-a {
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.a-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #27500A;
+  flex-shrink: 0;
+  padding-top: 1px;
+}
+
+.a-text {
+  font-size: 14px;
+  color: #555;
+  line-height: 1.7;
+}
+
+.a-text strong {
+  color: #111;
+  font-weight: 500;
+}
+
+/* ==========================================================================
+   9. 异议处理卡片
+   ========================================================================== */
+
+.objection-card {
+  background: #fff;
+  border: 0.5px solid #e0e0e0;
+  border-radius: 12px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.objection-trigger {
+  padding: 0.75rem 1.25rem;
+  border-bottom: 0.5px solid #f0f0ee;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.trigger-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #999;
+  flex-shrink: 0;
+}
+
+.trigger-text {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111;
+}
+
+.objection-body {
+  padding: 0.9rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.why-row,
+.reply-row {
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.why-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #999;
+  flex-shrink: 0;
+  padding-top: 2px;
+  min-width: 52px;
+}
+
+.reply-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #27500A;
+  flex-shrink: 0;
+  padding-top: 2px;
+  min-width: 52px;
+}
+
+.why-text {
+  font-size: 13px;
+  color: #888;
+  line-height: 1.6;
+}
+
+.reply-quote {
+  background: #f5f5f3;
+  border-left: 2px solid #d078cc;
+  border-radius: 6px 6px 6px 6px;
+  padding: 0.5rem 0.75rem;
+  font-size: 13px;
+  color: #444;
+  line-height: 1.7;
+  flex: 1;
+}
+
+.reply-quote strong {
+  color: #111;
+  font-weight: 500;
+}
+
+.tip-row {
+  font-size: 12px;
+  color: #aaa;
+  line-height: 1.6;
+  padding-top: 2px;
+}
+
+/* ==========================================================================
+   10. 灰色标签
+   ========================================================================== */
+
+.tag-gray {
+  background: #f0f0ee;
+  color: #555;
+}
