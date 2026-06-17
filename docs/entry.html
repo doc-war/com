@@ -4,8 +4,34 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>入口 - DocWar</title>
+<style>
+    body {
+        background: #f6f6f6;
+        display: flex;
+        flex-direction: column;
+        justify-content: flex-start;
+        background-size: 100% 100%;
+        margin: 0;
+        padding: 0;
+        background-image: url(./img/background.png);
+        overflow: hidden;
+    }
+    
+    .main {
+        height: 80vh;
+        min-height: 80vh;
+        width: 80vw;
+        padding: 10vh 10vw;
+        overflow-y: auto;
+        scrollbar-width: thin;
+    }
+    .main::-webkit-scrollbar {
+        width: 2px;
+    }
+</style>
 </head>
 <body>
+  <div class="main">
 <h1>开源产品文档</h1>
 <ul>
   <li><a href="/CML/">CML</a> — Context Mark Language</li>
@@ -19,12 +45,13 @@
 <h3>技术驱动-提供基础设施产品服务</h3>
 <ul>
   <li><a href="https://yyyyer.com" target="_blank">yyyyer.com</a> — 上海雾拓网络</li>
-  <li>暂未公开</li>
+  <li>暂未公开文档</li>
 </ul>
-<h3>业务驱动-提供接地气的客户服务</h3>
+<h3>运营驱动-提供接地气的客户工具和服务</h3>
 <ul>
   <li><a href="https://shaodong-keji.com" target="_blank">shaodong-keji.com</a> — 邵东本地的软件服务公司</li>
   <li><a href="/shaodong-sales/">shaodong-sales</a> — 湖南雾算科技·销售培训资料</li>
 </ul>
+</div>
 </body>
 </html>
