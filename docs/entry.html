@@ -5,53 +5,132 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>入口 - DocWar</title>
 <style>
+    * { box-sizing: border-box; }
+
     body {
         background: #f6f6f6;
         display: flex;
-        flex-direction: column;
-        justify-content: flex-start;
-        background-size: 100% 100%;
+        justify-content: center;
+        align-items: stretch;
         margin: 0;
         padding: 0;
         background-image: url(./img/background.png);
-        overflow: hidden;
+        background-size: cover;
+        min-height: 100vh;
     }
-    
+
+    .container {
+        display: flex;
+        width: 100%;
+        max-width: 1400px;
+        min-height: 100vh;
+        padding: 5vh 5vw;
+        gap: 4vw;
+    }
+
     .main {
-        height: 80vh;
-        min-height: 80vh;
-        width: 80vw;
-        padding: 10vh 10vw;
+        flex: 1;
         overflow-y: auto;
         scrollbar-width: thin;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
     }
     .main::-webkit-scrollbar {
         width: 2px;
     }
+    .tag{
+      color:#ff8822;
+      font-weight: bold;
+    }
+
+    .sidebar {
+        width: 320px;
+        min-width: 280px;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        padding: 2rem;
+        background: rgba(255, 255, 255, 0.5);
+        border-radius: 12px;
+        line-height: 1.9;
+        font-size: 14px;
+        color: #333;
+    }
+
+    .sidebar .brand {
+        font-size: 1.15rem;
+        font-weight: 700;
+        margin-bottom: 1.2rem;
+        color: #111;
+    }
+
+    .sidebar .contact {
+        margin-top: 1.5rem;
+        padding-top: 1.2rem;
+        border-top: 1px solid #ddd;
+    }
+
+    .sidebar .contact a {
+        color: #0366d6;
+        text-decoration: none;
+    }
+    .sidebar .contact a:hover {
+        text-decoration: underline;
+    }
+
+    @media (max-width: 768px) {
+        .container {
+            flex-direction: column;
+            padding: 3vh 3vw;
+            gap: 3vh;
+        }
+        .sidebar {
+            width: 100%;
+            min-width: unset;
+            justify-content: flex-start;
+        }
+    }
 </style>
 </head>
 <body>
+<div class="container">
   <div class="main">
-<h1>开源产品文档</h1>
+<h2>开源产品文档</h2>
+<p><span class="tag">产品驱动</span>-保持造物主的纯粹，顺手做些范式改良</p>
 <ul>
   <li><a href="/CML/">CML</a> — Context Mark Language</li>
-  <li><a href="/contextmarklanguage/">contextmarklanguage</a> — CML 另一入口</li>
+  <li><a href="/contextmarklanguage/">contextmarklanguage</a> — CML的英文版入口</li>
   <li><a href="/data-context-card/">data-context-card</a> — 声明式卡片框架</li>
   <li><a href="/data-preview/">data-preview</a> — 声明式预览框架</li>
   <li><a href="/project/">project</a> — 项目入口协议</li>
-  <li><a href="/projectentryprotocol/">projectentryprotocol</a> — 项目入口协议另一入口</li>
+  <li><a href="/projectentryprotocol/">projectentryprotocol</a> — 项目入口协议的英文版入口</li>
 </ul>
-<h1>商业产品和业务</h1>
-<h3>技术驱动-提供基础设施产品服务</h3>
+<h2>商业产品和业务</h2>
+<p><span class="tag">技术驱动</span>-提供基础设施产品服务</p>
 <ul>
   <li><a href="https://yyyyer.com" target="_blank">yyyyer.com</a> — 上海雾拓网络</li>
   <li>暂未公开文档</li>
 </ul>
-<h3>运营驱动-提供接地气的客户工具和服务</h3>
+<p><span class="tag">运营驱动</span>-提供接地气的客户工具和服务</p>
 <ul>
   <li><a href="https://shaodong-keji.com" target="_blank">shaodong-keji.com</a> — 邵东本地的软件服务公司</li>
   <li><a href="/shaodong-sales/">shaodong-sales</a> — 湖南雾算科技·销售培训资料</li>
 </ul>
+</div>
+  <div class="sidebar">
+    <div class="brand">© zhaoliwei</div>
+    <div><b>[主语言]</b> JS、Go、Rust..无所谓啦，万法归一</div>
+    <div><b>[超级个体]</b> 产品经理&amp;全栈架构师&amp;文档工程师&amp;财务专业&amp;投资研究者&amp;小发明爱好者</div>
+    <div><b>[高光]</b> 2010年初出校门投稿，13篇网评科技板块24小时热文榜首</div>
+    <div><b>[定位]</b> 专注协议级基础工具研发，贡献判断力价值</div>
+    <div class="contact">
+      <div style="font-weight:600;margin-bottom:.4rem">联系方式</div>
+      <div>微信：yueshif</div>
+      <div>email：<a href="mailto:zhao@mandaren.com">zhao@mandaren.com</a></div>
+      <div>email：<a href="mailto:yueshif@gmail.com">yueshif@gmail.com</a></div>
+    </div>
+  </div>
 </div>
 </body>
 </html>
