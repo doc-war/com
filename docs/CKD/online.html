@@ -1,0 +1,542 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="description" content="CKD（Channel Key Derivation）通道密钥派生在线测试工具。轻量级、无状态、可逆的资源标识派生协议，支持派生与解析测试。">
+<meta name="keywords" content="CKD,channel-key-derivation,密钥派生,通道密钥,加密,在线测试">
+<meta name="author" content="doc-war">
+<meta name="robots" content="index, follow">
+
+<meta property="og:title" content="CKD 通道密钥派生 · 在线测试工具">
+<meta property="og:description" content="CKD（Channel Key Derivation）通道密钥派生在线测试。支持派生与解析操作，验证跨语言一致性。">
+<meta property="og:type" content="website">
+<meta property="og:url" content="https://doc-war.com/ckd">
+
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="CKD 通道密钥派生 · 在线测试工具">
+<meta name="twitter:description" content="CKD（Channel Key Derivation）通道密钥派生在线测试。">
+<script src="/analytics.js" defer></script><!-- 引入统计代码 -->
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon"><!-- 引入官网ico -->
+
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebApplication",
+  "name": "CKD 通道密钥派生测试工具",
+  "description": "轻量级、无状态、可逆的资源标识派生协议的在线测试工具",
+  "applicationCategory": "SecurityApplication",
+  "operatingSystem": "All",
+  "author": {
+    "@type": "Organization",
+    "name": "doc-war"
+  },
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  }
+}
+</script>
+
+<title>CKD 通道密钥派生 · 在线测试</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #f5f6f8;
+  --surface: #ffffff;
+  --border: #d0d5dd;
+  --text: #1a1d23;
+  --text-dim: #6b7280;
+  --accent: #2563eb;
+  --accent-hover: #3b82f6;
+  --green: #16a34a;
+  --red: #dc2626;
+  --radius: 8px;
+  --font: 'SF Mono', 'Cascadia Code', 'Consolas', 'Menlo', monospace;
+}
+body {
+  background: var(--bg);
+  color: var(--text);
+  font: 14px/1.6 var(--font);
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  padding: 32px 16px;
+}
+#app { max-width: 1000px; width: 100%; }
+h1 {
+  font-size: 22px;
+  font-weight: 600;
+  margin-bottom: 24px;
+  letter-spacing: -0.3px;
+}
+h1 small { font-size: 14px; color: var(--text-dim); font-weight: 400; margin-left: 12px; }
+.header-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
+.header-bar h1 { margin-bottom: 0; }
+.status-badge { font-size: 12px; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+.status-badge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.status-badge.loaded { color: #166534; }
+.status-badge.loaded::before { background: #16a34a; }
+.status-badge.pending { color: #92400e; }
+.status-badge.pending::before { background: #f59e0b; }
+.status-badge.error { color: #991b1b; }
+.status-badge.error::before { background: #dc2626; }
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+.section {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+}
+.row { display: flex; gap: 16px; flex-wrap: wrap; }
+.col { flex: 1; min-width: 280px; }
+.field { margin-bottom: 12px; }
+.field:last-child { margin-bottom: 0; }
+label {
+  display: block;
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 4px;
+  font-weight: 500;
+}
+input, textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text);
+  font: 13px/1.5 var(--font);
+  padding: 8px 12px;
+  outline: none;
+  transition: border-color .15s;
+}
+input:focus, textarea:focus { border-color: var(--accent); }
+input[readonly] { color: var(--text-dim); cursor: default; }
+input[readonly]:focus { border-color: var(--border); }
+input.error { border-color: var(--red); }
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 18px;
+  font: 13px/1 var(--font);
+  font-weight: 500;
+  cursor: pointer;
+  transition: background .15s;
+}
+.btn:hover { background: var(--accent-hover); }
+.btn:active { transform: scale(0.97); }
+.btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-secondary {
+  background: transparent;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+.btn-secondary:hover { background: var(--border); }
+.btn-green { background: var(--green); }
+.btn-green:hover { filter: brightness(1.1); }
+.btn-red { background: transparent; color: var(--red); border: 1px solid var(--red); }
+.btn-red:hover { background: var(--red); color: #fff; }
+.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.result-row {
+  display: flex; gap: 8px; align-items: flex-start;
+  margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
+}
+.result-row label { white-space: nowrap; padding-top: 8px; }
+.result-row input { flex: 1; }
+.v-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  color: var(--text-dim);
+  font: 12px/1.3 var(--font);
+  padding: 6px 12px;
+  cursor: pointer;
+  transition: all .15s;
+  text-align: left;
+}
+.v-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(88,166,255,0.08); }
+#log-content {
+  background: var(--bg);
+  border-radius: 6px;
+  padding: 12px;
+  max-height: 240px;
+  overflow-y: auto;
+  font-size: 12px;
+  line-height: 1.7;
+}
+#log-content:empty::after { content: '暂无操作记录'; color: var(--text-dim); font-style: italic; }
+.log-entry { padding: 2px 0; border-bottom: 1px solid var(--border); }
+.log-entry:last-child { border-bottom: none; }
+.log-time { color: var(--text-dim); margin-right: 8px; }
+.log-ok { color: var(--green); }
+.log-err { color: var(--red); }
+.log-input { color: var(--text-dim); }
+.toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
+  background: var(--green); color: #fff;
+  padding: 8px 20px; border-radius: 6px;
+  font: 13px var(--font);
+  opacity: 0; transition: opacity .3s;
+  pointer-events: none;
+}
+.toast.show { opacity: 1; }
+.loading { opacity: 0.6; pointer-events: none; }
+
+@media (max-width: 700px) {
+  .col { min-width: 100%; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div class="header-bar">
+  <h1>CKD 通道密钥派生 <small>在线测试工具</small></h1>
+  <span class="status-badge pending" id="status-badge">加载中</span>
+</div>
+
+<div class="section" id="config-section">
+  <h2>平台配置</h2>
+  <div class="row">
+    <div class="col">
+      <div class="field">
+        <label for="secret">平台密钥 (base64URL 字符集)</label>
+        <input type="text" id="secret" placeholder="例如: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8" spellcheck="false">
+      </div>
+    </div>
+    <div class="col">
+      <div class="field">
+        <label for="version">当前版本 <span style="color:var(--text-dim)">[1-15]</span></label>
+        <input type="number" id="version" min="1" max="15" value="1" style="width:100px">
+      </div>
+    </div>
+  </div>
+  <div id="config-err" style="color:var(--red);font-size:12px;margin-top:8px;display:none"></div>
+</div>
+
+<div class="row" style="align-items:stretch">
+    <div class="col section">
+      <h2>🔑 派生</h2>
+      <div class="field">
+        <label for="derive-id">资源 ID</label>
+        <input type="text" id="derive-id" placeholder="例如: channel_12345" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="derive-purpose">用途 <span style="color:var(--text-dim)">[a-z0-9_-] 1-64 字符</span></label>
+        <input type="text" id="derive-purpose" placeholder="例如: webhook" spellcheck="false">
+      </div>
+      <button class="btn" id="derive-btn">派生</button>
+      <div class="result-row">
+        <label>结果</label>
+        <input type="text" id="derive-result" readonly placeholder="派生密钥将显示在这里">
+        <button class="btn btn-sm btn-secondary" id="copy-btn" title="复制结果">复制</button>
+      </div>
+    </div>
+    <div class="col section">
+      <h2>🔓 解析</h2>
+      <div class="field">
+        <label for="parse-key">派生密钥</label>
+        <input type="text" id="parse-key" placeholder="例如: AXnjdNQal5XDP66STw0pQbOzRi3AdGmiX1Xi5ZxO" spellcheck="false">
+      </div>
+      <div class="field">
+        <label for="parse-purpose">用途</label>
+        <input type="text" id="parse-purpose" placeholder="例如: webhook" spellcheck="false">
+      </div>
+      <button class="btn" id="parse-btn">解析</button>
+      <div class="result-row">
+        <label>结果</label>
+        <input type="text" id="parse-result" readonly placeholder="原始资源 ID 将显示在这里">
+      </div>
+    </div>
+  </div>
+
+<div class="section">
+  <h2>快速测试向量</h2>
+  <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
+    点击按钮自动填充配置和输入，用于验证跨语言一致性
+  </p>
+  <div class="btn-group">
+    <button class="v-btn" data-vector="1">向量1: v1 / webhook / channel_12345</button>
+    <button class="v-btn" data-vector="2">向量2: v1 / sse / user_67890</button>
+    <button class="v-btn" data-vector="3">向量3: v2 / api_token / channel_12345</button>
+  </div>
+</div>
+
+<div class="section">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+    <h2 style="margin-bottom:0">操作日志</h2>
+    <button class="btn btn-sm btn-red" id="clear-log">清空</button>
+  </div>
+  <div id="log-content"></div>
+</div>
+
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://unpkg.com/channel-key-derivation/dist/ckd.umd.js"></script>
+<script>
+(function () {
+  const badge = document.getElementById('status-badge');
+  const UMD = window.CKD;
+
+  if (!UMD) {
+    badge.textContent = '加载失败';
+    badge.className = 'status-badge error';
+    // Try local fallback
+    badge.textContent = '加载中';
+    badge.className = 'status-badge pending';
+    const s = document.createElement('script');
+    s.src = './dist/ckd.umd.js';
+    s.onload = () => { badge.textContent = '已加载'; badge.className = 'status-badge loaded'; location.reload(); };
+    s.onerror = () => { badge.textContent = '加载失败'; badge.className = 'status-badge error'; };
+    document.body.appendChild(s);
+    return;
+  }
+
+  badge.textContent = '已加载';
+  badge.className = 'status-badge loaded';
+  const { CKD: CKDClass, CkdError, ErrInvalidPurpose, ErrInvalidDerivedKey } = UMD;
+
+  const $ = id => document.getElementById(id);
+  const secretEl = $('secret');
+  const versionEl = $('version');
+  const deriveId = $('derive-id');
+  const derivePurpose = $('derive-purpose');
+  const deriveResult = $('derive-result');
+  const deriveBtn = $('derive-btn');
+  const parseKey = $('parse-key');
+  const parsePurpose = $('parse-purpose');
+  const parseResult = $('parse-result');
+  const parseBtn = $('parse-btn');
+  const copyBtn = $('copy-btn');
+  const configErr = $('config-err');
+  const logContent = $('log-content');
+  const clearLog = $('clear-log');
+  const toast = $('toast');
+
+  const B64URL_RE = /^[A-Za-z0-9_-]+$/;
+
+  function secretToBytes(str) {
+    str = str.trim();
+    if (!B64URL_RE.test(str)) throw new Error('含非 base64URL 字符');
+    return new TextEncoder().encode(str);
+  }
+
+  function bytesToBase64url(bytes) {
+    let binary = '';
+    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
+    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  function showToast(msg) {
+    toast.textContent = msg;
+    toast.classList.add('show');
+    clearTimeout(toast._timer);
+    toast._timer = setTimeout(() => toast.classList.remove('show'), 2000);
+  }
+
+  function log(type, input, output) {
+    const t = new Date().toLocaleTimeString();
+    const el = document.createElement('div');
+    el.className = 'log-entry';
+    const icon = type === 'ok' ? '✓' : '✗';
+    const cls = type === 'ok' ? 'log-ok' : 'log-err';
+    el.innerHTML = `<span class="log-time">[${t}]</span><span class="${cls}">${icon}</span> <span class="log-input">${input}</span> → ${output}`;
+    logContent.prepend(el);
+    if (logContent.children.length > 200) logContent.lastChild.remove();
+  }
+
+  function readConfig() {
+    const secretStr = secretEl.value.trim();
+    if (!secretStr) { configErr.textContent = '请输入平台密钥'; configErr.style.display = 'block'; return null; }
+    let secret;
+    try { secret = secretToBytes(secretStr); } catch (e) {
+      configErr.textContent = '密钥含非 base64URL 字符（仅支持 A-Za-z0-9_-）'; configErr.style.display = 'block'; return null;
+    }
+
+    const version = parseInt(versionEl.value, 10);
+    if (isNaN(version) || version < 1 || version > 15) {
+      configErr.textContent = '版本号必须在 [1, 15] 范围内'; configErr.style.display = 'block'; return null;
+    }
+    configErr.style.display = 'none';
+    return { secret, version };
+  }
+
+  function makeCKD(config) {
+    try {
+      return new CKDClass({
+        currentVersion: config.version,
+        secretsByVersion: { [config.version]: config.secret },
+      });
+    } catch (e) {
+      configErr.textContent = '创建 CKD 实例失败: ' + e.message;
+      configErr.style.display = 'block';
+      return null;
+    }
+  }
+
+  function setLoading(btn, loading) {
+    btn.disabled = loading;
+    btn.style.opacity = loading ? '0.6' : '1';
+  }
+
+  deriveBtn.addEventListener('click', async () => {
+    const config = readConfig();
+    if (!config) return;
+    const ckd = makeCKD(config);
+    if (!ckd) return;
+
+    const resourceId = deriveId.value.trim();
+    if (!resourceId) { deriveResult.value = ''; deriveResult.className = 'error'; return; }
+    const purpose = derivePurpose.value.trim();
+    if (!purpose) { deriveResult.value = ''; deriveResult.className = 'error'; return; }
+
+    setLoading(deriveBtn, true);
+    try {
+      const key = await ckd.derive(new TextEncoder().encode(resourceId), purpose);
+      deriveResult.value = key;
+      deriveResult.className = '';
+      log('ok', `derive("${resourceId}", "${purpose}")`, key);
+    } catch (e) {
+      const msg = e === ErrInvalidPurpose ? '无效的用途标识' : (e.message || String(e));
+      deriveResult.value = '错误: ' + msg;
+      deriveResult.className = 'error';
+      log('err', `derive("${resourceId}", "${purpose}")`, msg);
+    }
+    setLoading(deriveBtn, false);
+  });
+
+  parseBtn.addEventListener('click', async () => {
+    const config = readConfig();
+    if (!config) return;
+    const ckd = makeCKD(config);
+    if (!ckd) return;
+
+    const key = parseKey.value.trim();
+    if (!key) { parseResult.value = ''; parseResult.className = 'error'; return; }
+    const purpose = parsePurpose.value.trim();
+    if (!purpose) { parseResult.value = ''; parseResult.className = 'error'; return; }
+
+    setLoading(parseBtn, true);
+    try {
+      const rid = await ckd.parse(key, purpose);
+      parseResult.value = new TextDecoder().decode(rid);
+      parseResult.className = '';
+      log('ok', `parse("${key}", "${purpose}")`, new TextDecoder().decode(rid));
+    } catch (e) {
+      const msg = e === ErrInvalidDerivedKey || e === ErrInvalidPurpose
+        ? (e === ErrInvalidPurpose ? '无效的用途标识' : '无效的派生密钥')
+        : (e.message || String(e));
+      parseResult.value = '错误: ' + msg;
+      parseResult.className = 'error';
+      log('err', `parse("${key}", "${purpose}")`, msg);
+    }
+    setLoading(parseBtn, false);
+  });
+
+  copyBtn.addEventListener('click', () => {
+    const val = deriveResult.value;
+    if (!val || val.startsWith('错误')) return;
+    navigator.clipboard.writeText(val).then(() => showToast('已复制')).catch(() => {});
+  });
+
+  clearLog.addEventListener('click', () => { logContent.innerHTML = ''; });
+
+  async function fillVector(n) {
+    const vectors = [
+      {
+        secret: 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8',
+        version: 1, resourceId: 'channel_12345', purpose: 'webhook',
+        expectedKey: 'AXnjdNQal5XDP66STw0pQbOzRi3AdGmiX1Xi5ZxO',
+      },
+      {
+        secret: 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8',
+        version: 1, resourceId: 'user_67890', purpose: 'sse',
+        expectedKey: 'Aez5p0zdhSjxmsgy92MfMhiMlhAbRxlldWcl',
+      },
+      {
+        secret: '_-7dzLuqmYh3ZlVEMyIRAP_u3cy7qpmId2ZVRDMiEQA',
+        version: 2, resourceId: 'channel_12345', purpose: 'api_token',
+        expectedKey: 'ApUFLCCTYol1B57b459DrXW8SiQaJLaJRUx246YY',
+      },
+    ];
+    const v = vectors[n - 1];
+    secretEl.value = v.secret;
+    versionEl.value = v.version;
+
+    deriveId.value = v.resourceId;
+    derivePurpose.value = v.purpose;
+    deriveResult.value = '';
+    deriveResult.className = '';
+
+    parseKey.value = '';
+    parsePurpose.value = '';
+    parseResult.value = '';
+    parseResult.className = '';
+
+    configErr.style.display = 'none';
+
+    const config = readConfig();
+    if (!config) return;
+    const ckd = makeCKD(config);
+    if (!ckd) return;
+
+    setLoading(deriveBtn, true);
+    try {
+      const key = await ckd.derive(new TextEncoder().encode(v.resourceId), v.purpose);
+      deriveResult.value = key;
+      deriveResult.className = '';
+
+      parseKey.value = key;
+      parsePurpose.value = v.purpose;
+
+      const rid = await ckd.parse(key, v.purpose);
+      parseResult.value = new TextDecoder().decode(rid);
+      parseResult.className = '';
+
+      const deriveOk = key === v.expectedKey;
+      const parseOk = parseResult.value === v.resourceId;
+      const status = deriveOk && parseOk ? '✓ 通过' : '✗ 不匹配';
+      log('ok', `向量${n} 自动测试 (derive+parse)`, `${status}  | 派生:${key}  | 解析:${parseResult.value}`);
+
+      if (deriveOk) showToast('向量 ' + n + ' 测试通过 ✓');
+    } catch (e) {
+      const msg = e.message || String(e);
+      deriveResult.value = '错误: ' + msg;
+      deriveResult.className = 'error';
+      log('err', `向量${n} 自动测试`, msg);
+    }
+    setLoading(deriveBtn, false);
+  }
+
+  document.querySelectorAll('[data-vector]').forEach(el => {
+    el.addEventListener('click', () => fillVector(parseInt(el.dataset.vector, 10)));
+  });
+
+  document.querySelectorAll('input').forEach(el => {
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter') {
+        if (el.closest('#derive-panel') || el.id.startsWith('derive-')) deriveBtn.click();
+        else if (el.closest('#parse-panel') || el.id.startsWith('parse-')) parseBtn.click();
+      }
+    });
+  });
+})();
+</script>
+</body>
+</html>
