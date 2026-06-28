@@ -58,7 +58,25 @@
       <p class="hero__sub">轻量级资源代理网关 —— 专为 AI 推理平台的临时文件上传、读取与生命周期管理设计。不重新发明存储，而是做现有存储（Local / S3 / R2 / OSS）的统一安全外壳。</p>
       <p class="redis-line">它是<strong>临时存储界</strong>的 <span>Redis</span>。</p>
       <div class="hero__cta">
-        <a href="#anatomy" class="btn btn--primary">看提货单怎么验证 ↓</a>
+        <div class="ai-skill-btn">
+          <a href="#anatomy" class="btn btn--primary">AI Skill</a>
+          <div class="ai-tooltip">
+            <div class="ai-tooltip__arrow"></div>
+            <div class="ai-tooltip__content">
+              <div class="ai-tooltip__title">AI / Skills 使用指南</div>
+              <p>Upload Broker 支持 AI Agent、AI Coding Assistant、Skills 等自动安装、部署和调用。</p>
+              <div class="ai-tooltip__steps">
+                <div class="ai-tooltip__step"><span class="ai-step-num">1</span>安装指定版本：<br><code class="ai-code">go install github.com/doc-war/uploadbroker/cmd/uploadbroker@latest</code></div>
+                <div class="ai-tooltip__step"><span class="ai-step-num">2</span>自动生成 <code>uploadbroker.yaml</code>，根据可用域名配置 <code>base_url</code></div>
+                <div class="ai-tooltip__step"><span class="ai-step-num">3</span>启动 Broker：<br><code class="ai-code">uploadbroker --config ./your-path/uploadbroker.yaml</code></div>
+                <div class="ai-tooltip__step"><span class="ai-step-num">4</span>健康检查：<code>GET /health</code></div>
+                <div class="ai-tooltip__step"><span class="ai-step-num">5</span>上传资源：<code>POST /v1/upload</code></div>
+                <div class="ai-tooltip__step"><span class="ai-step-num">6</span>返回结果中的 <code>url</code> 为公网可访问地址，直接作为 AI 模型输入</div>
+              </div>
+              <a href="https://raw.githubusercontent.com/doc-war/uploadbroker/main/docs/skill.md" class="ai-tooltip__link" target="_blank" rel="noopener">去github仓库docs/skill.md查看完整指引 &rarr;</a>
+            </div>
+          </div>
+        </div>
         <a href="https://github.com/doc-war/uploadbroker" class="btn btn--ghost" rel="noopener" target="_blank">查看源码 ↗</a>
       </div>
       <p class="hero__stats">3 个端点 · 6 项安全校验 · 0 外部运行时依赖</p>
@@ -159,43 +177,42 @@
       <h2>快速开始</h2>
       <p>单二进制部署，无外部运行时依赖。</p>
     </div>
-
-    <div class="qs-grid">
-      <div>
-        <div class="step">
-          <span class="step-num">1</span>
-          <div><p>下载二进制（或 <code>go install github.com/doc-war/uploadbroker</code>）</p></div>
-        </div>
-        <div class="step">
-          <span class="step-num">2</span>
-          <div><p>编写配置 <code>uploadbroker.yaml</code></p></div>
-        </div>
-        <div class="step">
-          <span class="step-num">3</span>
-          <div><p>启动 Broker</p></div>
-        </div>
-        <div class="step">
-          <span class="step-num">4</span>
-          <div><p>上传文件</p></div>
-        </div>
-        <div class="step">
-          <span class="step-num">5</span>
-          <div><p>读取文件</p></div>
-        </div>
+  </div>
+  <div class="qs-grid">
+    <div class="qs-left">
+      <div class="step">
+        <span class="step-num">1</span>
+        <div><p>下载二进制（或 <code>go install github.com/doc-war/uploadbroker</code>）</p></div>
       </div>
+      <div class="step">
+        <span class="step-num">2</span>
+        <div><p>编写配置 <code>uploadbroker.yaml</code></p></div>
+      </div>
+      <div class="step">
+        <span class="step-num">3</span>
+        <div><p>启动 Broker</p></div>
+      </div>
+      <div class="step">
+        <span class="step-num">4</span>
+        <div><p>上传文件</p></div>
+      </div>
+      <div class="step">
+        <span class="step-num">5</span>
+        <div><p>读取文件</p></div>
+      </div>
+    </div>
 
-      <div>
-        <div class="term">
-          <div><span class="c"># uploadbroker.yaml</span></div>
-          <div><span class="p">listen</span>: 127.0.0.1:9001</div>
-          <div><span class="p">base_url</span>: https://upload.example.com   <span class="c"># 注入访问根，拼接提货单</span></div>
-        </div>
-        <div class="term" style="margin-top:12px">
-          <div><span class="c"># 上传 &amp; 读取</span></div>
-          <div><span class="p">$</span> curl -F "file=@photo.png" "http://127.0.0.1:9001/v1/upload"</div>
-          <div>{<span class="c">"code"</span>:0,<span class="c">"data"</span>:{<span class="c">"url"</span>:<span class="c">"https://..."</span>,<span class="c">"mimeType"</span>:<span class="c">"image/png"</span>}}</div>
-          <div><span class="p">$</span> curl "https://upload.example.com/tmp/..."</div>
-        </div>
+    <div>
+      <div class="term">
+        <div><span class="c"># uploadbroker.yaml</span></div>
+        <div><span class="p">listen</span>: 127.0.0.1:9001</div>
+        <div><span class="p">base_url</span>: https://upload.example.com   <span class="c"># 注入访问根，拼接提货单</span></div>
+      </div>
+      <div class="term" style="margin-top:12px">
+        <div><span class="c"># 上传 &amp; 读取</span></div>
+        <div><span class="p">$</span> curl -F "file=@photo.png" "http://127.0.0.1:9001/v1/upload"</div>
+        <div>{<span class="c">"code"</span>:0,<span class="c">"data"</span>:{<span class="c">"url"</span>:<span class="c">"https://..."</span>,<span class="c">"mimeType"</span>:<span class="c">"image/png"</span>}}</div>
+        <div><span class="p">$</span> curl "https://upload.example.com/tmp/..."</div>
       </div>
     </div>
   </div>
