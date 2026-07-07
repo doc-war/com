@@ -1,0 +1,13 @@
+pages:
+  stage: deploy
+
+  script:
+    - mkdir -p public          ## 创建一个平级目录
+    - cp -r docs/* public/     ## gitlab是public目录，本地应该一个push同时推送到两个仓库
+
+  artifacts:
+    paths:
+      - public
+
+  only:
+    - main
