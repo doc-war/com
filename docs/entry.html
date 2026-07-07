@@ -3,6 +3,42 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <script src="/analytics.js" defer></script><!-- 引入统计代码 -->
+    <link rel="icon" href="/img/favicon.ico" type="image/x-icon"><!-- 引入官网ico -->
+    <title>Doc-War-文档战场</title>
+    <meta name="description" content="专注于基础协议和基础工具研发,贡献判断力价值">
+    <link rel="canonical" href="https://doc-war.com">
+
+    <meta property="og:locale" content="zh_CN">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Doc-War-文档战场">
+    <meta property="og:description" content="专注于基础协议和基础工具研发,贡献判断力价值">
+    <meta property="og:url" content="https://doc-war.com/entry">
+    <meta property="og:image" content="/img/logo.png">
+    <meta property="og:image:width" content="400">
+    <meta property="og:image:height" content="400">
+    
+    <script type="application/ld+json">
+    {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "Doc-War",
+    "url": "https://doc-war.com",
+    "logo": "https://doc-war.com/img/logo.png",
+    "description": "Doc-War，取义文档战场，强调文档驱动思想。doc-war.com由zhaoliwei创建，是技术深度思考与判断力价值的聚集地。",
+    "publisher": {
+        "@type": "Person",
+        "name": "zhaoliwei"
+    },
+    "creator": {
+        "@type": "Person",
+        "name": "zhaoliwei",
+        "url": "https://doc-war.com",
+        "jobTitle": "产品经理 | 全栈架构师 | 文档工程师",
+        "description": "zhaoliwei，网名越石父，花名青樵，月光博客早期知名评论员，曾以提供判断力价值的评论风格而闻名。主张设计驱动，注重文档驱动，专注于基础协议（如.project、CML、CKD）和基础工具（如通知工具、推理网关、AI剧编辑器、提示词编译器）研发。"
+    }
+    }
+</script>
 <title>入口 - DocWar</title>
 <style>
     * { box-sizing: border-box; }
@@ -106,13 +142,14 @@
   <li><a href="/data-preview/">data-preview</a> — 声明式预览框架</li>
   <li><a href="/project/">project</a> — 项目入口协议</li>
   <li><a href="/projectentryprotocol/">projectentryprotocol</a> — 项目入口协议的英文版入口</li>
-  <li><a href="/CKD/">CKD</a> — 通道密钥派生协议</li>
+  <li><a href="/CKD/">CKD</a> — 通道密钥派生协议，用可还原派生算法消除查库映射，可10倍级提升并发。</li>
   <li><a href="/lru-next/">lru-next</a> — 新一代TTL&LRU内存缓存框架，比go-lru v2性能强4.2倍。</li>
   <li><a href="/uploadbroker/">UploadBroker</a> — AI时代的临时存储基础设施框架。</li>
-  <li><a href="/license-next/">license-next</a> — 下一代License签发和验证框架,极致轻量安全灵活。</li>
+  <li><a href="/promptSpacer/">PromptSpacer</a> — AI提示词插值编译器引擎，自带嵌入式编辑器，消除Agent开发复杂度。</li>
+  <li><a href="/license-next/">license-next</a> — 下一代License签发和验证框架，极致轻量安全灵活。</li>
 </ul>
 <h2>商业产品和业务</h2>
-<p><span class="tag">技术驱动</span>-提供基础设施产品服务</p>
+<p><span class="tag">技术驱动</span>-提供基础设施级的产品服务</p>
 <ul>
   <li><a href="https://yyyyer.com" target="_blank">yyyyer.com</a> — 上海雾拓网络</li>
   <li>暂未公开文档</li>
@@ -124,10 +161,11 @@
 </ul>
 </div>
   <div class="sidebar">
-    <div class="brand">© zhaoliwei</div>
+    <div class="brand">© zhaoliwei<br/><span style="color:#999;font-size: 11px;font-family: 400;">一个算命的术士，手持青龙偃月</span></div>
+    
     <div><b>[主语言]</b> JS、Go、Rust..无所谓啦，万法归一</div>
     <div><b>[超级个体]</b> 产品经理&amp;全栈架构师&amp;文档工程师&amp;财务专业&amp;投资研究者&amp;小发明爱好者&amp;潜在作者</div>
-    <div><b>[高光]</b> 2010年初出校门投稿月光博客和techweb，13篇网评科技板块24小时热文榜首</div>
+    <div><b>[高光]</b> 2010年初出校门投稿月光博客和techweb，31篇网评其中13篇上科技板块24小时热文榜首</div>
     <div><b>[定位]</b> 专注协议级基础工具研发，贡献判断力价值</div>
     <div class="contact">
       <div style="font-weight:600;margin-bottom:.4rem">联系方式</div>
