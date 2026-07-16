@@ -16,8 +16,6 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CKD 通道密钥派生 · 在线测试工具">
 <meta name="twitter:description" content="CKD（Channel Key Derivation）通道密钥派生在线测试。">
-<script src="/analytics.js" defer></script><!-- 引入统计代码 -->
-<link rel="icon" href="/img/favicon.ico" type="image/x-icon"><!-- 引入官网ico -->
 
 <script type="application/ld+json">
 {
@@ -54,51 +52,107 @@
   --red: #dc2626;
   --radius: 8px;
   --font: 'SF Mono', 'Cascadia Code', 'Consolas', 'Menlo', monospace;
+  --gap: 16px;
 }
 body {
   background: var(--bg);
   color: var(--text);
   font: 14px/1.6 var(--font);
   min-height: 100vh;
-  display: flex;
-  justify-content: center;
   padding: 32px 16px;
 }
-#app { max-width: 1000px; width: 100%; }
-h1 {
-  font-size: 22px;
-  font-weight: 600;
-  margin-bottom: 24px;
-  letter-spacing: -0.3px;
-}
-h1 small { font-size: 14px; color: var(--text-dim); font-weight: 400; margin-left: 12px; }
-.header-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px; }
-.header-bar h1 { margin-bottom: 0; }
-.status-badge { font-size: 12px; display: flex; align-items: center; gap: 6px; font-weight: 500; }
-.status-badge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
-.status-badge.loaded { color: #166534; }
-.status-badge.loaded::before { background: #16a34a; }
-.status-badge.pending { color: #92400e; }
-.status-badge.pending::before { background: #f59e0b; }
-.status-badge.error { color: #991b1b; }
-.status-badge.error::before { background: #dc2626; }
-h2 {
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  color: var(--text-dim);
-  margin-bottom: 12px;
-}
-.section {
+
+/* ===== Layout ===== */
+.app { max-width: 1100px; margin: 0 auto; }
+.header-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--gap); }
+.header-bar h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
+.header-bar h1 small { font-size: 14px; color: var(--text-dim); font-weight: 400; margin-left: 12px; }
+
+.secret-bar {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  padding: 20px;
-  margin-bottom: 16px;
+  padding: 16px 20px;
+  margin-bottom: var(--gap);
+  display: flex;
+  gap: 20px;
+  align-items: flex-end;
+  flex-wrap: wrap;
 }
-.row { display: flex; gap: 16px; flex-wrap: wrap; }
-.col { flex: 1; min-width: 280px; }
+.secret-bar .field { flex: 1; min-width: 200px; margin-bottom: 0; }
+.secret-bar .field-version { flex: 0 0 auto; min-width: 100px; }
+.byte-display {
+  flex-basis: 100%;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 4px 10px;
+  font-size: 12px;
+  line-height: 1.8;
+  color: var(--text-dim);
+  word-break: break-all;
+}
+.byte-display.ok { color: var(--green); }
+.byte-display.err { color: var(--red); }
+.byte-label {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.byte-count { font-weight: 400; color: var(--text-dim); }
+
+.main-layout {
+  display: grid;
+  gap: var(--gap);
+  grid-template-columns: 1fr 300px;
+}
+@media (max-width: 768px) {
+  .main-layout { grid-template-columns: 1fr; }
+  .log-panel { order: 99; }
+}
+.main-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.log-panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  display: flex;
+  flex-direction: column;
+  max-height: 600px;
+}
+
+/* ===== Tabs ===== */
+.tab-bar {
+  display: flex;
+  border-bottom: 1px solid var(--border);
+  padding: 0 20px;
+}
+.tab-btn {
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 12px 16px;
+  font: 13px/1 var(--font);
+  font-weight: 500;
+  color: var(--text-dim);
+  cursor: pointer;
+  transition: all .15s;
+}
+.tab-btn:hover { color: var(--text); }
+.tab-btn.active { color: var(--accent); border-bottom-color: var(--accent); }
+.tab-content { display: none; padding: 20px; }
+.tab-content.active { display: block; }
+
+/* ===== Fields ===== */
 .field { margin-bottom: 12px; }
 .field:last-child { margin-bottom: 0; }
 label {
@@ -108,7 +162,7 @@ label {
   margin-bottom: 4px;
   font-weight: 500;
 }
-input, textarea {
+input, select {
   width: 100%;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -119,10 +173,17 @@ input, textarea {
   outline: none;
   transition: border-color .15s;
 }
-input:focus, textarea:focus { border-color: var(--accent); }
+input:focus, select:focus { border-color: var(--accent); }
 input[readonly] { color: var(--text-dim); cursor: default; }
 input[readonly]:focus { border-color: var(--border); }
 input.error { border-color: var(--red); }
+select { cursor: pointer; }
+
+/* ===== Input Group ===== */
+.input-group { display: flex; gap: 6px; }
+.input-group input { flex: 1; }
+
+/* ===== Buttons ===== */
 .btn {
   display: inline-flex;
   align-items: center;
@@ -140,51 +201,168 @@ input.error { border-color: var(--red); }
 .btn:hover { background: var(--accent-hover); }
 .btn:active { transform: scale(0.97); }
 .btn-sm { padding: 5px 12px; font-size: 12px; }
+.btn-icon {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.btn-icon:hover { border-color: var(--accent); background: rgba(37,99,235,0.06); }
 .btn-secondary {
   background: transparent;
   color: var(--text);
   border: 1px solid var(--border);
 }
 .btn-secondary:hover { background: var(--border); }
-.btn-green { background: var(--green); }
-.btn-green:hover { filter: brightness(1.1); }
 .btn-red { background: transparent; color: var(--red); border: 1px solid var(--red); }
 .btn-red:hover { background: var(--red); color: #fff; }
-.btn-group { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 8px; }
+.btn-scene {
+  background: var(--bg);
+  color: var(--text-dim);
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  padding: 8px 14px;
+  font: 12px/1 var(--font);
+  cursor: pointer;
+  transition: all .15s;
+  white-space: nowrap;
+}
+.btn-scene:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
+
+/* ===== Status Badge ===== */
+.status-badge { font-size: 12px; display: flex; align-items: center; gap: 6px; font-weight: 500; }
+.status-badge::before { content: ''; width: 8px; height: 8px; border-radius: 50%; display: inline-block; }
+.status-badge.loaded { color: #166534; }
+.status-badge.loaded::before { background: #16a34a; }
+.status-badge.pending { color: #92400e; }
+.status-badge.pending::before { background: #f59e0b; }
+.status-badge.error { color: #991b1b; }
+.status-badge.error::before { background: #dc2626; }
+
+/* ===== Result Row ===== */
 .result-row {
   display: flex; gap: 8px; align-items: flex-start;
   margin-top: 12px; padding-top: 12px; border-top: 1px solid var(--border);
 }
 .result-row label { white-space: nowrap; padding-top: 8px; }
 .result-row input { flex: 1; }
-.v-btn {
-  background: transparent;
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  color: var(--text-dim);
-  font: 12px/1.3 var(--font);
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: all .15s;
-  text-align: left;
+
+/* ===== Log ===== */
+.log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
-.v-btn:hover { border-color: var(--accent); color: var(--text); background: rgba(88,166,255,0.08); }
+.log-header h2 { font-size: 13px; font-weight: 600; color: var(--text-dim); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 0; }
 #log-content {
-  background: var(--bg);
-  border-radius: 6px;
-  padding: 12px;
-  max-height: 240px;
+  flex: 1;
   overflow-y: auto;
+  padding: 8px 12px;
   font-size: 12px;
   line-height: 1.7;
 }
 #log-content:empty::after { content: '暂无操作记录'; color: var(--text-dim); font-style: italic; }
-.log-entry { padding: 2px 0; border-bottom: 1px solid var(--border); }
+.log-entry { padding: 4px 0; border-bottom: 1px solid var(--border); word-break: break-all; }
 .log-entry:last-child { border-bottom: none; }
 .log-time { color: var(--text-dim); margin-right: 8px; }
 .log-ok { color: var(--green); }
 .log-err { color: var(--red); }
 .log-input { color: var(--text-dim); }
+h2 {
+  font-size: 13px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+/* ===== Vector Tab ===== */
+.vector-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--border);
+}
+.vector-item:last-child { border-bottom: none; }
+.vector-desc { flex: 1; font-size: 13px; }
+.vector-status { font-size: 12px; font-weight: 500; white-space: nowrap; }
+.vector-status.pass { color: var(--green); }
+.vector-status.fail { color: var(--red); }
+
+/* ===== Modal ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  padding: 16px;
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--surface);
+  border-radius: 12px;
+  width: 100%;
+  max-width: 480px;
+  max-height: 80vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+}
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+}
+.modal-header h3 { font-size: 16px; font-weight: 600; }
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--text-dim);
+  padding: 4px;
+}
+.modal-close:hover { color: var(--text); }
+.modal-body { padding: 20px; }
+.scene-section { margin-bottom: 20px; }
+.scene-section:last-child { margin-bottom: 0; }
+.scene-section-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dim);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 10px;
+}
+.scene-grid { display: flex; flex-wrap: wrap; gap: 8px; }
+.scene-card {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all .15s;
+  font-size: 13px;
+}
+.scene-card:hover { border-color: var(--accent); background: rgba(37,99,235,0.04); }
+.scene-card .scene-icon { font-size: 16px; }
+
+/* ===== Toast ===== */
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
   background: var(--green); color: #fff;
@@ -192,98 +370,158 @@ input.error { border-color: var(--red); }
   font: 13px var(--font);
   opacity: 0; transition: opacity .3s;
   pointer-events: none;
+  z-index: 2000;
 }
 .toast.show { opacity: 1; }
-.loading { opacity: 0.6; pointer-events: none; }
 
-@media (max-width: 700px) {
-  .col { min-width: 100%; }
-}
+/* ===== Utils ===== */
+.loading { opacity: 0.6; pointer-events: none; }
+.err-msg { color: var(--red); font-size: 12px; margin-top: 8px; display: none; }
 </style>
 </head>
 <body>
-<div id="app">
+<div class="app">
 
 <div class="header-bar">
   <h1>CKD 通道密钥派生 <small>在线测试工具</small></h1>
   <span class="status-badge pending" id="status-badge">加载中</span>
 </div>
 
-<div class="section" id="config-section">
-  <h2>平台配置</h2>
-  <div class="row">
-    <div class="col">
-      <div class="field">
-        <label for="secret">平台密钥 (base64URL 字符集)</label>
-        <input type="text" id="secret" placeholder="例如: AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8" spellcheck="false">
-      </div>
-    </div>
-    <div class="col">
-      <div class="field">
-        <label for="version">当前版本 <span style="color:var(--text-dim)">[1-15]</span></label>
-        <input type="number" id="version" min="1" max="15" value="1" style="width:100px">
-      </div>
+<div class="secret-bar">
+  <div class="field">
+    <label for="secret">字符串形式</label>
+    <div class="input-group">
+      <input type="password" id="secret" placeholder="base64URL 字符集" spellcheck="false">
+      <button class="btn-icon" id="toggle-secret" title="显示/隐藏密钥">👁</button>
+
     </div>
   </div>
-  <div id="config-err" style="color:var(--red);font-size:12px;margin-top:8px;display:none"></div>
+  <div class="field field-version">
+    <label for="version">版本</label>
+    <select id="version"></select>
+  </div>
+  <div class="byte-display" id="secret-bytes">
+    <div class="byte-label">字节数组 <span class="byte-count" id="secret-byte-count"></span></div>
+    <div id="secret-byte-content">等待输入...</div>
+  </div>
 </div>
 
-<div class="row" style="align-items:stretch">
-    <div class="col section">
-      <h2>🔑 派生</h2>
+<div id="config-err" class="err-msg" style="max-width:1100px;margin:0 auto var(--gap)"></div>
+
+<div class="main-layout">
+  <div class="main-panel">
+    <div class="tab-bar">
+      <button class="tab-btn active" data-tab="derive">派生</button>
+      <button class="tab-btn" data-tab="parse">解析</button>
+      <button class="tab-btn" data-tab="vectors">快速向量</button>
+    </div>
+
+    <!-- Tab: 派生 -->
+    <div class="tab-content active" id="tab-derive">
       <div class="field">
         <label for="derive-id">资源 ID</label>
         <input type="text" id="derive-id" placeholder="例如: channel_12345" spellcheck="false">
       </div>
       <div class="field">
-        <label for="derive-purpose">用途 <span style="color:var(--text-dim)">[a-z0-9_-] 1-64 字符</span></label>
-        <input type="text" id="derive-purpose" placeholder="例如: webhook" spellcheck="false">
+        <label for="derive-purpose">用途</label>
+        <div class="input-group">
+          <input type="text" id="derive-purpose" placeholder="例如: website-github" spellcheck="false">
+          <button class="btn-scene" id="scene-picker-btn">选场景</button>
+        </div>
       </div>
       <button class="btn" id="derive-btn">派生</button>
       <div class="result-row">
         <label>结果</label>
         <input type="text" id="derive-result" readonly placeholder="派生密钥将显示在这里">
-        <button class="btn btn-sm btn-secondary" id="copy-btn" title="复制结果">复制</button>
+        <button class="btn-icon" id="copy-derive" title="复制结果">📋</button>
       </div>
     </div>
-    <div class="col section">
-      <h2>🔓 解析</h2>
+
+    <!-- Tab: 解析 -->
+    <div class="tab-content" id="tab-parse">
       <div class="field">
         <label for="parse-key">派生密钥</label>
         <input type="text" id="parse-key" placeholder="例如: AXnjdNQal5XDP66STw0pQbOzRi3AdGmiX1Xi5ZxO" spellcheck="false">
       </div>
       <div class="field">
         <label for="parse-purpose">用途</label>
-        <input type="text" id="parse-purpose" placeholder="例如: webhook" spellcheck="false">
+        <input type="text" id="parse-purpose" placeholder="例如: website-github" spellcheck="false">
       </div>
       <button class="btn" id="parse-btn">解析</button>
       <div class="result-row">
         <label>结果</label>
         <input type="text" id="parse-result" readonly placeholder="原始资源 ID 将显示在这里">
+        <button class="btn-icon" id="copy-parse" title="复制结果">📋</button>
+      </div>
+    </div>
+
+    <!-- Tab: 快速向量 -->
+    <div class="tab-content" id="tab-vectors">
+      <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">点击运行验证跨语言一致性，结果同步记录到日志</p>
+      <div class="vector-item">
+        <span class="vector-desc">向量1: v1 / webhook / channel_12345</span>
+        <button class="btn btn-sm" data-vector="1">运行</button>
+        <span class="vector-status" id="vec-status-1"></span>
+      </div>
+      <div class="vector-item">
+        <span class="vector-desc">向量2: v1 / sse / user_67890</span>
+        <button class="btn btn-sm" data-vector="2">运行</button>
+        <span class="vector-status" id="vec-status-2"></span>
+      </div>
+      <div class="vector-item">
+        <span class="vector-desc">向量3: v2 / api_token / channel_12345</span>
+        <button class="btn btn-sm" data-vector="3">运行</button>
+        <span class="vector-status" id="vec-status-3"></span>
+      </div>
+      <div style="margin-top:12px">
+        <button class="btn btn-secondary btn-sm" id="run-all-vectors">全部运行</button>
       </div>
     </div>
   </div>
 
-<div class="section">
-  <h2>快速测试向量</h2>
-  <p style="font-size:12px;color:var(--text-dim);margin-bottom:12px">
-    点击按钮自动填充配置和输入，用于验证跨语言一致性
-  </p>
-  <div class="btn-group">
-    <button class="v-btn" data-vector="1">向量1: v1 / webhook / channel_12345</button>
-    <button class="v-btn" data-vector="2">向量2: v1 / sse / user_67890</button>
-    <button class="v-btn" data-vector="3">向量3: v2 / api_token / channel_12345</button>
+  <!-- Log Panel -->
+  <div class="log-panel">
+    <div class="log-header">
+      <h2>操作日志</h2>
+      <button class="btn btn-sm btn-red" id="clear-log">清空</button>
+    </div>
+    <div id="log-content"></div>
   </div>
 </div>
 
-<div class="section">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-    <h2 style="margin-bottom:0">操作日志</h2>
-    <button class="btn btn-sm btn-red" id="clear-log">清空</button>
-  </div>
-  <div id="log-content"></div>
 </div>
 
+<!-- Scene Picker Modal -->
+<div class="modal-overlay" id="scene-modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3>选择场景</h3>
+      <button class="modal-close" id="scene-modal-close">✕</button>
+    </div>
+    <div class="modal-body">
+      <div class="scene-section">
+        <div class="scene-section-title">数据库</div>
+        <div class="scene-grid">
+          <div class="scene-card" data-scene="db-local"><span class="scene-icon">💻</span> 本地</div>
+          <div class="scene-card" data-scene="db-aliyun"><span class="scene-icon">☁️</span> 阿里云</div>
+          <div class="scene-card" data-scene="db-tencent"><span class="scene-icon">☁️</span> 腾讯云</div>
+          <div class="scene-card" data-scene="db-aws"><span class="scene-icon">☁️</span> AWS</div>
+        </div>
+      </div>
+      <div class="scene-section">
+        <div class="scene-section-title">网站账号</div>
+        <div class="scene-grid">
+          <div class="scene-card" data-scene="website-github"><span class="scene-icon">🐙</span> GitHub</div>
+          <div class="scene-card" data-scene="website-npm"><span class="scene-icon">📦</span> npm</div>
+          <div class="scene-card" data-scene="website-orcid"><span class="scene-icon">🔬</span> ORCID</div>
+          <div class="scene-card" data-scene="website-gitlab"><span class="scene-icon">🦊</span> GitLab</div>
+          <div class="scene-card" data-scene="website-huggingface"><span class="scene-icon">🤗</span> HuggingFace</div>
+          <div class="scene-card" data-scene="website-godaddy"><span class="scene-icon">🌐</span> GoDaddy</div>
+          <div class="scene-card" data-scene="website-google"><span class="scene-icon">🔍</span> Google</div>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 <div id="toast" class="toast"></div>
@@ -295,9 +533,6 @@ input.error { border-color: var(--red); }
   const UMD = window.CKD;
 
   if (!UMD) {
-    badge.textContent = '加载失败';
-    badge.className = 'status-badge error';
-    // Try local fallback
     badge.textContent = '加载中';
     badge.className = 'status-badge pending';
     const s = document.createElement('script');
@@ -313,8 +548,19 @@ input.error { border-color: var(--red); }
   const { CKD: CKDClass, CkdError, ErrInvalidPurpose, ErrInvalidDerivedKey } = UMD;
 
   const $ = id => document.getElementById(id);
-  const secretEl = $('secret');
+  const B64URL_RE = /^[A-Za-z0-9_-]+$/;
+
+  // ===== Init version select =====
   const versionEl = $('version');
+  for (let i = 1; i <= 15; i++) {
+    const opt = document.createElement('option');
+    opt.value = i;
+    opt.textContent = i;
+    versionEl.appendChild(opt);
+  }
+
+  // ===== DOM refs =====
+  const secretEl = $('secret');
   const deriveId = $('derive-id');
   const derivePurpose = $('derive-purpose');
   const deriveResult = $('derive-result');
@@ -323,24 +569,22 @@ input.error { border-color: var(--red); }
   const parsePurpose = $('parse-purpose');
   const parseResult = $('parse-result');
   const parseBtn = $('parse-btn');
-  const copyBtn = $('copy-btn');
   const configErr = $('config-err');
   const logContent = $('log-content');
-  const clearLog = $('clear-log');
   const toast = $('toast');
+  const sceneModal = $('scene-modal');
 
-  const B64URL_RE = /^[A-Za-z0-9_-]+$/;
-
+  // ===== Helpers =====
   function secretToBytes(str) {
     str = str.trim();
     if (!B64URL_RE.test(str)) throw new Error('含非 base64URL 字符');
-    return new TextEncoder().encode(str);
-  }
-
-  function bytesToBase64url(bytes) {
-    let binary = '';
-    for (let i = 0; i < bytes.length; i++) binary += String.fromCharCode(bytes[i]);
-    return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+    let b64 = str.replace(/-/g, '+').replace(/_/g, '/');
+    while (b64.length % 4) b64 += '=';
+    let bin;
+    try { bin = atob(b64); } catch (_) { throw new Error('不是有效的 base64URL 编码（长度或结构无效）'); }
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    return bytes;
   }
 
   function showToast(msg) {
@@ -356,19 +600,18 @@ input.error { border-color: var(--red); }
     el.className = 'log-entry';
     const icon = type === 'ok' ? '✓' : '✗';
     const cls = type === 'ok' ? 'log-ok' : 'log-err';
-    el.innerHTML = `<span class="log-time">[${t}]</span><span class="${cls}">${icon}</span> <span class="log-input">${input}</span> → ${output}`;
+    el.innerHTML = '<span class="log-time">[' + t + ']</span><span class="' + cls + '">' + icon + '</span> <span class="log-input">' + input + '</span> → ' + output;
     logContent.prepend(el);
     if (logContent.children.length > 200) logContent.lastChild.remove();
   }
 
   function readConfig() {
     const secretStr = secretEl.value.trim();
-    if (!secretStr) { configErr.textContent = '请输入平台密钥'; configErr.style.display = 'block'; return null; }
+    if (!secretStr) { configErr.textContent = '请输入主密钥'; configErr.style.display = 'block'; return null; }
     let secret;
     try { secret = secretToBytes(secretStr); } catch (e) {
       configErr.textContent = '密钥含非 base64URL 字符（仅支持 A-Za-z0-9_-）'; configErr.style.display = 'block'; return null;
     }
-
     const version = parseInt(versionEl.value, 10);
     if (isNaN(version) || version < 1 || version > 15) {
       configErr.textContent = '版本号必须在 [1, 15] 范围内'; configErr.style.display = 'block'; return null;
@@ -395,6 +638,60 @@ input.error { border-color: var(--red); }
     btn.style.opacity = loading ? '0.6' : '1';
   }
 
+  // ===== Secret toggle =====
+  $('toggle-secret').addEventListener('click', () => {
+    const isPassword = secretEl.type === 'password';
+    secretEl.type = isPassword ? 'text' : 'password';
+    $('toggle-secret').textContent = isPassword ? '🙈' : '👁';
+  });
+
+  // ===== Secret byte display =====
+  const secretByteContent = $('secret-byte-content');
+  const secretByteCount = $('secret-byte-count');
+  const secretBytesEl = $('secret-bytes');
+  function updateSecretBytes() {
+    const val = secretEl.value.trim();
+    if (!val) {
+      secretByteContent.textContent = '等待输入...';
+      secretByteCount.textContent = '';
+      secretBytesEl.className = 'byte-display';
+      return;
+    }
+    if (!B64URL_RE.test(val)) {
+      secretByteContent.textContent = '含非法字符';
+      secretByteCount.textContent = '';
+      secretBytesEl.className = 'byte-display err';
+      return;
+    }
+    try {
+      const bytes = secretToBytes(val);
+      const hexes = Array.from(bytes).map(b => '0x' + b.toString(16).padStart(2, '0'));
+      const lines = [];
+      for (let i = 0; i < hexes.length; i += 8) {
+        lines.push(hexes.slice(i, i + 8).join(', '));
+      }
+      secretByteContent.textContent = '[ ' + lines.join(',\n       ') + ' ]';
+      secretByteCount.textContent = bytes.length + ' bytes';
+      secretBytesEl.className = 'byte-display ok';
+    } catch (e) {
+      secretByteContent.textContent = '解码失败: ' + e.message;
+      secretByteCount.textContent = '';
+      secretBytesEl.className = 'byte-display err';
+    }
+  }
+  secretEl.addEventListener('input', updateSecretBytes);
+
+  // ===== Tab switching =====
+  document.querySelectorAll('.tab-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+      btn.classList.add('active');
+      $('tab-' + btn.dataset.tab).classList.add('active');
+    });
+  });
+
+  // ===== Derive =====
   deriveBtn.addEventListener('click', async () => {
     const config = readConfig();
     if (!config) return;
@@ -411,16 +708,23 @@ input.error { border-color: var(--red); }
       const key = await ckd.derive(new TextEncoder().encode(resourceId), purpose);
       deriveResult.value = key;
       deriveResult.className = '';
-      log('ok', `derive("${resourceId}", "${purpose}")`, key);
+      log('ok', 'derive("' + resourceId + '", "' + purpose + '")', key);
     } catch (e) {
       const msg = e === ErrInvalidPurpose ? '无效的用途标识' : (e.message || String(e));
       deriveResult.value = '错误: ' + msg;
       deriveResult.className = 'error';
-      log('err', `derive("${resourceId}", "${purpose}")`, msg);
+      log('err', 'derive("' + resourceId + '", "' + purpose + '")', msg);
     }
     setLoading(deriveBtn, false);
   });
 
+  $('copy-derive').addEventListener('click', () => {
+    const val = deriveResult.value;
+    if (!val || val.startsWith('错误')) return;
+    navigator.clipboard.writeText(val).then(() => showToast('已复制')).catch(() => {});
+  });
+
+  // ===== Parse =====
   parseBtn.addEventListener('click', async () => {
     const config = readConfig();
     if (!config) return;
@@ -437,104 +741,143 @@ input.error { border-color: var(--red); }
       const rid = await ckd.parse(key, purpose);
       parseResult.value = new TextDecoder().decode(rid);
       parseResult.className = '';
-      log('ok', `parse("${key}", "${purpose}")`, new TextDecoder().decode(rid));
+      log('ok', 'parse("' + key + '", "' + purpose + '")', new TextDecoder().decode(rid));
     } catch (e) {
       const msg = e === ErrInvalidDerivedKey || e === ErrInvalidPurpose
         ? (e === ErrInvalidPurpose ? '无效的用途标识' : '无效的派生密钥')
         : (e.message || String(e));
       parseResult.value = '错误: ' + msg;
       parseResult.className = 'error';
-      log('err', `parse("${key}", "${purpose}")`, msg);
+      log('err', 'parse("' + key + '", "' + purpose + '")', msg);
     }
     setLoading(parseBtn, false);
   });
 
-  copyBtn.addEventListener('click', () => {
-    const val = deriveResult.value;
+  $('copy-parse').addEventListener('click', () => {
+    const val = parseResult.value;
     if (!val || val.startsWith('错误')) return;
     navigator.clipboard.writeText(val).then(() => showToast('已复制')).catch(() => {});
   });
 
-  clearLog.addEventListener('click', () => { logContent.innerHTML = ''; });
+  // ===== Scene Modal =====
+  $('scene-picker-btn').addEventListener('click', () => {
+    sceneModal.classList.add('open');
+  });
 
-  async function fillVector(n) {
-    const vectors = [
-      {
-        secret: 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8',
-        version: 1, resourceId: 'channel_12345', purpose: 'webhook',
-        expectedKey: 'AXnjdNQal5XDP66STw0pQbOzRi3AdGmiX1Xi5ZxO',
-      },
-      {
-        secret: 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8',
-        version: 1, resourceId: 'user_67890', purpose: 'sse',
-        expectedKey: 'Aez5p0zdhSjxmsgy92MfMhiMlhAbRxlldWcl',
-      },
-      {
-        secret: '_-7dzLuqmYh3ZlVEMyIRAP_u3cy7qpmId2ZVRDMiEQA',
-        version: 2, resourceId: 'channel_12345', purpose: 'api_token',
-        expectedKey: 'ApUFLCCTYol1B57b459DrXW8SiQaJLaJRUx246YY',
-      },
-    ];
+  $('scene-modal-close').addEventListener('click', () => {
+    sceneModal.classList.remove('open');
+  });
+
+  sceneModal.addEventListener('click', (e) => {
+    if (e.target === sceneModal) sceneModal.classList.remove('open');
+  });
+
+  // Scene cards - unified handler
+  document.querySelectorAll('.scene-card').forEach(card => {
+    card.addEventListener('click', () => {
+      derivePurpose.value = card.dataset.scene;
+      sceneModal.classList.remove('open');
+    });
+  });
+
+  // ===== Vectors =====
+  const vectors = [
+    {
+      secret: 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8',
+      version: 1, resourceId: 'channel_12345', purpose: 'webhook',
+      expectedKey: 'AXnjdNQal5XDP66STw0pQbOzRi3AdGmiX1Xi5ZxO',
+    },
+    {
+      secret: 'AAECAwQFBgcICQoLDA0ODxAREhMUFRYXGBkaGxwdHh8',
+      version: 1, resourceId: 'user_67890', purpose: 'sse',
+      expectedKey: 'Aez5p0zdhSjxmsgy92MfMhiMlhAbRxlldWcl',
+    },
+    {
+      secret: '_-7dzLuqmYh3ZlVEMyIRAP_u3cy7qpmId2ZVRDMiEQA',
+      version: 2, resourceId: 'channel_12345', purpose: 'api_token',
+      expectedKey: 'ApUFLCCTYol1B57b459DrXW8SiQaJLaJRUx246YY',
+    },
+  ];
+
+  async function runVector(n) {
     const v = vectors[n - 1];
-    secretEl.value = v.secret;
-    versionEl.value = v.version;
+    const statusEl = $('vec-status-' + n);
+    statusEl.textContent = '运行中...';
+    statusEl.className = 'vector-status';
 
+    secretEl.value = v.secret;
+    updateSecretBytes();
+    versionEl.value = v.version;
     deriveId.value = v.resourceId;
     derivePurpose.value = v.purpose;
     deriveResult.value = '';
     deriveResult.className = '';
-
-    parseKey.value = '';
-    parsePurpose.value = '';
-    parseResult.value = '';
-    parseResult.className = '';
-
     configErr.style.display = 'none';
 
-    const config = readConfig();
-    if (!config) return;
-    const ckd = makeCKD(config);
-    if (!ckd) return;
-
-    setLoading(deriveBtn, true);
     try {
+      const config = readConfig();
+      if (!config) { statusEl.textContent = '✗ 配置错误'; statusEl.className = 'vector-status fail'; return; }
+      const ckd = makeCKD(config);
+      if (!ckd) { statusEl.textContent = '✗ 配置错误'; statusEl.className = 'vector-status fail'; return; }
+
       const key = await ckd.derive(new TextEncoder().encode(v.resourceId), v.purpose);
       deriveResult.value = key;
       deriveResult.className = '';
 
-      parseKey.value = key;
-      parsePurpose.value = v.purpose;
-
       const rid = await ckd.parse(key, v.purpose);
-      parseResult.value = new TextDecoder().decode(rid);
-      parseResult.className = '';
+      const ridStr = new TextDecoder().decode(rid);
 
       const deriveOk = key === v.expectedKey;
-      const parseOk = parseResult.value === v.resourceId;
-      const status = deriveOk && parseOk ? '✓ 通过' : '✗ 不匹配';
-      log('ok', `向量${n} 自动测试 (derive+parse)`, `${status}  | 派生:${key}  | 解析:${parseResult.value}`);
+      const parseOk = ridStr === v.resourceId;
+      const allOk = deriveOk && parseOk;
 
-      if (deriveOk) showToast('向量 ' + n + ' 测试通过 ✓');
+      statusEl.textContent = allOk ? '✓ 通过' : '✗ 不匹配';
+      statusEl.className = 'vector-status ' + (allOk ? 'pass' : 'fail');
+
+      const detail = 'derive=' + key + ' parse=' + ridStr + ' expected=' + v.expectedKey;
+      log(allOk ? 'ok' : 'err', '向量' + n + ' (' + v.purpose + ' / ' + v.resourceId + ')', detail);
+
+      if (allOk) showToast('向量 ' + n + ' 通过 ✓');
     } catch (e) {
       const msg = e.message || String(e);
-      deriveResult.value = '错误: ' + msg;
-      deriveResult.className = 'error';
-      log('err', `向量${n} 自动测试`, msg);
+      statusEl.textContent = '✗ 错误';
+      statusEl.className = 'vector-status fail';
+      log('err', '向量' + n, msg);
     }
-    setLoading(deriveBtn, false);
   }
 
   document.querySelectorAll('[data-vector]').forEach(el => {
-    el.addEventListener('click', () => fillVector(parseInt(el.dataset.vector, 10)));
+    el.addEventListener('click', () => runVector(parseInt(el.dataset.vector, 10)));
   });
 
+  $('run-all-vectors').addEventListener('click', async () => {
+    for (let i = 1; i <= 3; i++) await runVector(i);
+  });
+
+  // ===== Clear Log =====
+  $('clear-log').addEventListener('click', () => { logContent.innerHTML = ''; });
+
+  // ===== Enter key support =====
   document.querySelectorAll('input').forEach(el => {
     el.addEventListener('keydown', e => {
       if (e.key === 'Enter') {
-        if (el.closest('#derive-panel') || el.id.startsWith('derive-')) deriveBtn.click();
-        else if (el.closest('#parse-panel') || el.id.startsWith('parse-')) parseBtn.click();
+        if (el.id.startsWith('derive-')) deriveBtn.click();
+        else if (el.id.startsWith('parse-')) parseBtn.click();
       }
     });
+  });
+
+  // ===== Secret real-time validation =====
+  secretEl.addEventListener('input', () => {
+    const val = secretEl.value.trim();
+    if (val && !B64URL_RE.test(val)) {
+      secretEl.classList.add('error');
+      configErr.textContent = '含非 base64URL 字符（仅支持 A-Za-z0-9_-）';
+      configErr.style.display = 'block';
+    } else {
+      secretEl.classList.remove('error');
+      configErr.style.display = 'none';
+    }
   });
 })();
 </script>
