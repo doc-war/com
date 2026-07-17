@@ -16,7 +16,8 @@
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CKD 通道密钥派生 · 在线测试工具">
 <meta name="twitter:description" content="CKD（Channel Key Derivation）通道密钥派生在线测试。">
-
+<script src="/analytics.js" defer></script><!-- 引入统计代码 -->
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon"><!-- 引入官网ico -->
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
@@ -37,7 +38,7 @@
 }
 </script>
 
-<title>CKD 通道密钥派生 · 在线测试</title>
+<title>CKD通道密钥派生 · 在线测试</title>
 <style>
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 :root {
@@ -67,6 +68,9 @@ body {
 .header-bar { display: flex; align-items: center; justify-content: space-between; margin-bottom: var(--gap); }
 .header-bar h1 { font-size: 22px; font-weight: 600; letter-spacing: -0.3px; }
 .header-bar h1 small { font-size: 14px; color: var(--text-dim); font-weight: 400; margin-left: 12px; }
+.header-right { display: flex; align-items: center; gap: 12px; }
+.header-link { font-size: 13px; color: var(--accent); text-decoration: none; font-weight: 500; }
+.header-link:hover { text-decoration: underline; }
 
 .secret-bar {
   background: var(--surface);
@@ -220,18 +224,6 @@ select { cursor: pointer; }
 .btn-secondary:hover { background: var(--border); }
 .btn-red { background: transparent; color: var(--red); border: 1px solid var(--red); }
 .btn-red:hover { background: var(--red); color: #fff; }
-.btn-scene {
-  background: var(--bg);
-  color: var(--text-dim);
-  border: 1px dashed var(--border);
-  border-radius: 6px;
-  padding: 8px 14px;
-  font: 12px/1 var(--font);
-  cursor: pointer;
-  transition: all .15s;
-  white-space: nowrap;
-}
-.btn-scene:hover { border-color: var(--accent); color: var(--accent); border-style: solid; }
 
 /* ===== Status Badge ===== */
 .status-badge { font-size: 12px; display: flex; align-items: center; gap: 6px; font-weight: 500; }
@@ -298,70 +290,6 @@ h2 {
 .vector-status.pass { color: var(--green); }
 .vector-status.fail { color: var(--red); }
 
-/* ===== Modal ===== */
-.modal-overlay {
-  display: none;
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.4);
-  z-index: 1000;
-  justify-content: center;
-  align-items: center;
-  padding: 16px;
-}
-.modal-overlay.open { display: flex; }
-.modal {
-  background: var(--surface);
-  border-radius: 12px;
-  width: 100%;
-  max-width: 480px;
-  max-height: 80vh;
-  overflow-y: auto;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
-}
-.modal-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 16px 20px;
-  border-bottom: 1px solid var(--border);
-}
-.modal-header h3 { font-size: 16px; font-weight: 600; }
-.modal-close {
-  background: none;
-  border: none;
-  font-size: 20px;
-  cursor: pointer;
-  color: var(--text-dim);
-  padding: 4px;
-}
-.modal-close:hover { color: var(--text); }
-.modal-body { padding: 20px; }
-.scene-section { margin-bottom: 20px; }
-.scene-section:last-child { margin-bottom: 0; }
-.scene-section-title {
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-dim);
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  margin-bottom: 10px;
-}
-.scene-grid { display: flex; flex-wrap: wrap; gap: 8px; }
-.scene-card {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 14px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all .15s;
-  font-size: 13px;
-}
-.scene-card:hover { border-color: var(--accent); background: rgba(37,99,235,0.04); }
-.scene-card .scene-icon { font-size: 16px; }
-
 /* ===== Toast ===== */
 .toast {
   position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%);
@@ -383,8 +311,11 @@ h2 {
 <div class="app">
 
 <div class="header-bar">
-  <h1>CKD 通道密钥派生 <small>在线测试工具</small></h1>
-  <span class="status-badge pending" id="status-badge">加载中</span>
+  <h1>CKD通道密钥派生<small>在线测试工具</small></h1>
+  <div class="header-right">
+    <a href="scene.html" class="header-link">场景化派生 →</a>
+    <span class="status-badge pending" id="status-badge">加载中</span>
+  </div>
 </div>
 
 <div class="secret-bar">
@@ -424,10 +355,7 @@ h2 {
       </div>
       <div class="field">
         <label for="derive-purpose">用途</label>
-        <div class="input-group">
-          <input type="text" id="derive-purpose" placeholder="例如: website-github" spellcheck="false">
-          <button class="btn-scene" id="scene-picker-btn">选场景</button>
-        </div>
+        <input type="text" id="derive-purpose" placeholder="例如: website-github" spellcheck="false">
       </div>
       <button class="btn" id="derive-btn">派生</button>
       <div class="result-row">
@@ -491,39 +419,6 @@ h2 {
 
 </div>
 
-<!-- Scene Picker Modal -->
-<div class="modal-overlay" id="scene-modal">
-  <div class="modal">
-    <div class="modal-header">
-      <h3>选择场景</h3>
-      <button class="modal-close" id="scene-modal-close">✕</button>
-    </div>
-    <div class="modal-body">
-      <div class="scene-section">
-        <div class="scene-section-title">数据库</div>
-        <div class="scene-grid">
-          <div class="scene-card" data-scene="db-local"><span class="scene-icon">💻</span> 本地</div>
-          <div class="scene-card" data-scene="db-aliyun"><span class="scene-icon">☁️</span> 阿里云</div>
-          <div class="scene-card" data-scene="db-tencent"><span class="scene-icon">☁️</span> 腾讯云</div>
-          <div class="scene-card" data-scene="db-aws"><span class="scene-icon">☁️</span> AWS</div>
-        </div>
-      </div>
-      <div class="scene-section">
-        <div class="scene-section-title">网站账号</div>
-        <div class="scene-grid">
-          <div class="scene-card" data-scene="website-github"><span class="scene-icon">🐙</span> GitHub</div>
-          <div class="scene-card" data-scene="website-npm"><span class="scene-icon">📦</span> npm</div>
-          <div class="scene-card" data-scene="website-orcid"><span class="scene-icon">🔬</span> ORCID</div>
-          <div class="scene-card" data-scene="website-gitlab"><span class="scene-icon">🦊</span> GitLab</div>
-          <div class="scene-card" data-scene="website-huggingface"><span class="scene-icon">🤗</span> HuggingFace</div>
-          <div class="scene-card" data-scene="website-godaddy"><span class="scene-icon">🌐</span> GoDaddy</div>
-          <div class="scene-card" data-scene="website-google"><span class="scene-icon">🔍</span> Google</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
 <div id="toast" class="toast"></div>
 
 <script src="https://unpkg.com/channel-key-derivation/dist/ckd.umd.js"></script>
@@ -572,7 +467,6 @@ h2 {
   const configErr = $('config-err');
   const logContent = $('log-content');
   const toast = $('toast');
-  const sceneModal = $('scene-modal');
 
   // ===== Helpers =====
   function secretToBytes(str) {
@@ -757,27 +651,6 @@ h2 {
     const val = parseResult.value;
     if (!val || val.startsWith('错误')) return;
     navigator.clipboard.writeText(val).then(() => showToast('已复制')).catch(() => {});
-  });
-
-  // ===== Scene Modal =====
-  $('scene-picker-btn').addEventListener('click', () => {
-    sceneModal.classList.add('open');
-  });
-
-  $('scene-modal-close').addEventListener('click', () => {
-    sceneModal.classList.remove('open');
-  });
-
-  sceneModal.addEventListener('click', (e) => {
-    if (e.target === sceneModal) sceneModal.classList.remove('open');
-  });
-
-  // Scene cards - unified handler
-  document.querySelectorAll('.scene-card').forEach(card => {
-    card.addEventListener('click', () => {
-      derivePurpose.value = card.dataset.scene;
-      sceneModal.classList.remove('open');
-    });
   });
 
   // ===== Vectors =====
