@@ -1,0 +1,1445 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>OpenDeploy：Go / Rust / Deno 单二进制服务自动部署工具 | systemd · 健康检查 · 原子替换</title>
+<meta name="description" content="OpenDeploy 是面向单机/少量服务器场景的轻量级部署 CLI。通过 SSH 自动完成构建、打包上传、原子替换、systemd 托管、Nginx 同步和 HTTP 健康检查，一条命令部署整个项目。无需 Docker，支持 Go / Rust / Deno 多二进制服务。">
+<link rel="canonical" href="https://opendeploy.dev/" />
+
+<!-- Open Graph -->
+<meta property="og:type" content="website" />
+<meta property="og:title" content="OpenDeploy：一条命令完成 Go 服务部署" />
+<meta property="og:description" content="轻量级、幂等的 Linux 服务自动部署工具。构建、原子替换、systemd 托管、健康检查，一次跑完。" />
+<meta property="og:url" content="https://opendeploy.dev/" />
+<meta property="og:site_name" content="OpenDeploy" />
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content="OpenDeploy：Go / Rust / Deno 单二进制服务自动部署工具" />
+<meta name="twitter:description" content="面向单机/少量服务器场景的轻量级部署 CLI。无需 Docker，一条命令完成构建、上传、原子替换、systemd 托管和健康检查。" />
+
+<script src="/analytics.js" defer></script><!-- 引入统计代码 -->
+<link rel="icon" href="/img/favicon.ico" type="image/x-icon"><!-- 引入官网ico -->
+
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700;800&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #12161C;
+    --bg-raised: #181D25;
+    --bg-elevated: #1E242E;
+    --ink: #E9EDF3;
+    --ink-dim: #8A93A3;
+    --ink-faint: #545D6E;
+    --amber: #E8A33D;
+    --amber-dim: #B87F2E;
+    --amber-glow: rgba(232, 163, 61, 0.12);
+    --line: #2A3140;
+    --line-soft: #1F2530;
+    --green: #7FB88A;
+    --red: #E07A7A;
+    --mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    --sans: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    --radius: 8px;
+    --radius-sm: 6px;
+    --max: 820px;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: light) {
+    :root:not([data-theme="dark"]) {
+      --bg: #F5F3EE;
+      --bg-raised: #FFFFFF;
+      --bg-elevated: #FAF8F4;
+      --ink: #191D24;
+      --ink-dim: #5B6270;
+      --ink-faint: #9199A8;
+      --amber: #B7791F;
+      --amber-dim: #8A5D14;
+      --amber-glow: rgba(183, 121, 31, 0.08);
+      --line: #DEDAD0;
+      --line-soft: #E8E5DE;
+    }
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html {
+    -webkit-text-size-adjust: none;
+    text-size-adjust: none;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
+    scroll-behavior: smooth;
+    scroll-padding-top: 80px;
+  }
+
+  body {
+    min-height: 100dvh;
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  a { color: inherit; text-decoration: none; }
+  code, .mono { font-family: var(--mono); }
+
+  .wrap { max-width: var(--max); margin: 0 auto; padding: 0 24px; }
+
+  /* === Header === */
+  header.site-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: color-mix(in oklab, var(--bg) 88%, transparent);
+    backdrop-filter: blur(12px);
+    border-bottom: 1px solid var(--line);
+    padding: 0 24px;
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+  .header-inner {
+    max-width: var(--max);
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    height: 56px;
+  }
+  .brand {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: -0.02em;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand svg { flex-shrink: 0; }
+  .brand span { color: var(--amber); }
+  nav.top-nav { display: flex; gap: 22px; }
+  nav.top-nav a {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-dim);
+    transition: color 180ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+  nav.top-nav a:hover { color: var(--ink); }
+
+  /* === Hero === */
+  .hero { padding: 72px 0 48px; }
+  .kicker {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-dim);
+    margin-bottom: 20px;
+    display: inline-block;
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 4px 10px;
+    background: var(--bg-raised);
+  }
+  .kicker b { color: var(--amber); font-weight: 500; }
+  h1 {
+    font-family: var(--mono);
+    font-weight: 800;
+    font-size: clamp(28px, 5vw, 44px);
+    line-height: 1.18;
+    letter-spacing: -0.02em;
+    margin: 0 0 20px;
+  }
+  h1 .accent { color: var(--amber); }
+  .lede {
+    font-size: 17px;
+    color: var(--ink-dim);
+    max-width: 56ch;
+    margin: 0 0 36px;
+    line-height: 1.7;
+  }
+  .hero-actions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-bottom: 36px;
+  }
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    font-family: var(--mono);
+    font-size: 13.5px;
+    font-weight: 500;
+    padding: 11px 18px;
+    border-radius: var(--radius-sm);
+    transition: all 180ms cubic-bezier(0.16, 1, 0.3, 1);
+    border: 1px solid var(--line);
+  }
+  .btn-primary {
+    background: var(--amber);
+    color: #12161C;
+    border-color: var(--amber);
+  }
+  .btn-primary:hover {
+    background: var(--amber-dim);
+    border-color: var(--amber-dim);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 16px var(--amber-glow);
+  }
+  .btn-ghost {
+    background: var(--bg-raised);
+    color: var(--ink);
+  }
+  .btn-ghost:hover {
+    border-color: var(--ink-dim);
+    background: var(--bg-elevated);
+  }
+
+  /* === Terminal === */
+  .term {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    font-family: var(--mono);
+    font-size: 13px;
+    margin-bottom: 24px;
+  }
+  .term-bar {
+    display: flex;
+    gap: 6px;
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--line);
+    background: var(--bg-elevated);
+  }
+  .term-bar i { width: 9px; height: 9px; border-radius: 50%; background: var(--line); display: block; }
+  .term-body { padding: 18px 18px 20px; overflow-x: auto; }
+  .term-body .ln { white-space: pre; line-height: 1.8; }
+  .term-body .prompt { color: var(--ink-faint); }
+  .term-body .cmd { color: var(--ink); }
+  .term-body .out { color: var(--ink-dim); }
+  .term-body .ok { color: var(--green); }
+  .term-body .amb { color: var(--amber); }
+
+  .badges { display: flex; flex-wrap: wrap; gap: 8px; }
+  .badge {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 4px 9px;
+    background: var(--bg-raised);
+  }
+
+  /* === Sections === */
+  section { padding: 52px 0; border-top: 1px solid var(--line); }
+  section:first-of-type { border-top: none; }
+  h2 {
+    font-family: var(--mono);
+    font-size: clamp(18px, 3vw, 22px);
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    margin: 0 0 10px;
+  }
+  .section-sub {
+    color: var(--ink-dim);
+    font-size: 15px;
+    margin: 0 0 28px;
+    max-width: 56ch;
+  }
+
+  /* === Summary / Answer Block === */
+  .summary-block {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-left: 3px solid var(--amber);
+    border-radius: var(--radius);
+    padding: 24px 28px;
+    margin-bottom: 8px;
+  }
+  .summary-block p {
+    font-size: 15.5px;
+    line-height: 1.75;
+    color: var(--ink);
+    max-width: none;
+  }
+  .summary-block p + p { margin-top: 14px; }
+
+  /* === Feature Grid === */
+  .feature-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  @media (max-width: 600px) { .feature-grid { grid-template-columns: 1fr; } }
+  .feature-item {
+    background: var(--bg-raised);
+    padding: 20px 22px;
+    transition: background 180ms;
+  }
+  .feature-item:hover { background: var(--bg-elevated); }
+  .feature-item .ficon {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--amber);
+    margin-bottom: 8px;
+  }
+  .feature-item h3 {
+    font-family: var(--sans);
+    font-size: 14.5px;
+    font-weight: 600;
+    margin: 0 0 4px;
+  }
+  .feature-item p {
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.55;
+    max-width: none;
+  }
+
+  /* === Steps === */
+  .steps { display: flex; flex-direction: column; }
+  .step {
+    display: grid;
+    grid-template-columns: 36px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--line-soft);
+  }
+  .step:last-child { border-bottom: none; }
+  .step .n {
+    font-family: var(--mono);
+    color: var(--amber);
+    font-weight: 700;
+    font-size: 14px;
+  }
+  .step .t { font-size: 14.5px; }
+  .step .t b { font-weight: 600; }
+  .step .t small {
+    display: block;
+    color: var(--ink-dim);
+    font-size: 13px;
+    margin-top: 3px;
+    line-height: 1.55;
+  }
+
+  /* === Code Block === */
+  pre.code {
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px 20px;
+    overflow-x: auto;
+    font-family: var(--mono);
+    font-size: 12.5px;
+    line-height: 1.75;
+    color: var(--ink-dim);
+    margin: 0 0 16px;
+  }
+  pre.code .c1 { color: var(--ink-faint); }
+  pre.code .key { color: var(--ink); }
+  pre.code .val { color: var(--amber); }
+
+  /* === Config Table === */
+  .config-table { display: flex; flex-direction: column; }
+  .config-row {
+    display: grid;
+    grid-template-columns: 160px 1fr;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-soft);
+    align-items: baseline;
+  }
+  .config-row:last-child { border-bottom: none; }
+  .config-row code {
+    font-size: 13px;
+    color: var(--amber);
+  }
+  .config-row .desc { font-size: 14px; color: var(--ink-dim); }
+  .config-row .desc small { color: var(--ink-faint); font-size: 12.5px; display: block; margin-top: 2px; }
+  @media (max-width: 500px) {
+    .config-row { grid-template-columns: 1fr; gap: 4px; }
+  }
+
+  /* === Command List === */
+  .cmdlist { display: flex; flex-direction: column; }
+  .cmditem {
+    display: flex;
+    gap: 16px;
+    padding: 14px 0;
+    border-bottom: 1px solid var(--line-soft);
+    align-items: baseline;
+  }
+  .cmditem:last-child { border-bottom: none; }
+  .cmditem code {
+    font-size: 13px;
+    color: var(--amber);
+    flex: 0 0 200px;
+  }
+  .cmditem span { font-size: 14px; color: var(--ink-dim); }
+  @media (max-width: 500px) {
+    .cmditem { flex-direction: column; gap: 4px; }
+    .cmditem code { flex: none; }
+  }
+
+  /* === Comparison Table === */
+  .compare-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+  }
+  .compare-table th {
+    text-align: left;
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--ink-faint);
+    font-size: 12px;
+    padding: 0 12px 12px 0;
+    border-bottom: 1px solid var(--line);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .compare-table td {
+    padding: 14px 12px 14px 0;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+    color: var(--ink-dim);
+  }
+  .compare-table td:first-child {
+    font-family: var(--mono);
+    color: var(--ink);
+    white-space: nowrap;
+    font-weight: 500;
+  }
+  .compare-table .check { color: var(--green); }
+  .compare-table .cross { color: var(--ink-faint); }
+
+  /* === Deps Table === */
+  table.deps { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+  table.deps th {
+    text-align: left;
+    font-family: var(--mono);
+    font-weight: 500;
+    color: var(--ink-faint);
+    font-size: 12px;
+    padding: 0 0 10px;
+    border-bottom: 1px solid var(--line);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  table.deps td {
+    padding: 12px 0;
+    border-bottom: 1px solid var(--line-soft);
+    vertical-align: top;
+    color: var(--ink-dim);
+  }
+  table.deps td:first-child {
+    font-family: var(--mono);
+    color: var(--ink);
+    white-space: nowrap;
+    padding-right: 16px;
+  }
+
+  /* === Use Cases === */
+  .usecase-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1px;
+    background: var(--line);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+  }
+  @media (max-width: 600px) { .usecase-grid { grid-template-columns: 1fr; } }
+  .usecase-card {
+    background: var(--bg-raised);
+    padding: 24px 22px;
+  }
+  .usecase-card h3 {
+    font-family: var(--mono);
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0 0 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .usecase-card.do h3 { color: var(--green); }
+  .usecase-card.dont h3 { color: var(--ink-faint); }
+  .usecase-card ul { list-style: none; padding: 0; }
+  .usecase-card li {
+    font-size: 14px;
+    color: var(--ink-dim);
+    padding: 6px 0;
+    line-height: 1.55;
+    padding-left: 20px;
+    position: relative;
+  }
+  .usecase-card.do li::before {
+    content: "✓";
+    position: absolute; left: 0;
+    color: var(--green);
+    font-family: var(--mono);
+  }
+  .usecase-card.dont li::before {
+    content: "—";
+    position: absolute; left: 0;
+    color: var(--ink-faint);
+  }
+
+  /* === FAQ === */
+  .faq-list { display: flex; flex-direction: column; }
+  .faq-item {
+    border-bottom: 1px solid var(--line-soft);
+    padding: 0;
+  }
+  .faq-item summary {
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    cursor: pointer;
+    padding: 18px 0;
+    list-style: none;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    transition: color 180ms;
+  }
+  .faq-item summary::-webkit-details-marker { display: none; }
+  .faq-item summary::before {
+    content: "+";
+    font-family: var(--mono);
+    font-size: 16px;
+    color: var(--amber);
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: transform 200ms;
+  }
+  .faq-item[open] summary::before { content: "−"; }
+  .faq-item summary:hover { color: var(--amber); }
+  .faq-item .faq-answer {
+    padding: 0 0 20px 28px;
+    font-size: 14.5px;
+    color: var(--ink-dim);
+    line-height: 1.7;
+  }
+  .faq-item .faq-answer p { max-width: none; }
+  .faq-item .faq-answer code { color: var(--amber); font-size: 13.5px; }
+
+  /* === Note === */
+  .note {
+    border-left: 2px solid var(--amber-dim);
+    padding: 6px 0 6px 16px;
+    margin-top: 28px;
+    font-size: 13.5px;
+    color: var(--ink-dim);
+    line-height: 1.6;
+  }
+
+  /* === Footer === */
+  footer.site-footer {
+    padding: 48px 0 calc(52px + env(safe-area-inset-bottom, 0px));
+    border-top: 1px solid var(--line);
+    margin-top: 24px;
+  }
+  .foot-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+  .fcmd {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink);
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 9px 14px;
+  }
+  .meta {
+    font-size: 12.5px;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+  }
+
+  /* === TOC Sidebar (desktop) === */
+  .toc-toggle {
+    display: none;
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-dim);
+    background: var(--bg-raised);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 6px 12px;
+  }
+
+  /* === Mobile Nav === */
+  @media (max-width: 640px) {
+    nav.top-nav { gap: 16px; }
+    nav.top-nav a { font-size: 12px; }
+    .hero { padding: 48px 0 36px; }
+    section { padding: 40px 0; }
+  }
+
+  ::-webkit-scrollbar { height: 8px; width: 8px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--line); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+</style>
+
+<!-- Structured Data: SoftwareApplication -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "OpenDeploy",
+  "applicationCategory": "DeveloperApplication",
+  "operatingSystem": "Linux, macOS, Windows",
+  "description": "OpenDeploy 是面向单机/少量服务器场景的轻量级部署 CLI。通过 SSH 自动完成构建、打包上传、原子替换、systemd 托管、Nginx 同步和 HTTP 健康检查，一条命令部署整个项目。",
+  "softwareVersion": "0.9.0",
+  "license": "https://opensource.org/licenses/MIT",
+  "url": "https://doc-war.com/opendeploy/",
+  "softwareRequirements": "Node.js >= 18, SSH, scp, tar",
+  "programmingLanguage": "Go, Rust, Deno",
+  "offers": {
+    "@type": "Offer",
+    "price": "0",
+    "priceCurrency": "USD"
+  },
+  "author": {
+    "@type": "Organization",
+    "name": "doc-war",
+    "url": "https://doc-war.com",
+    "jobTitle": "产品经理 | 全栈架构师 | 文档工程师",
+    "description": "zhaoliwei，网名越石父，花名青樵，月光博客早期知名评论员，曾以提供判断力价值的评论风格而闻名。主张设计驱动，注重文档驱动，专注于基础协议和基础工具研发。"
+  },
+}
+</script>
+
+<!-- Structured Data: FAQPage -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "OpenDeploy 是否需要 Docker？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "不需要。OpenDeploy 通过 SSH 将构建产物直接部署到 Linux 服务器，并使用 systemd 托管服务，不依赖 Docker 或容器技术。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "OpenDeploy 支持哪些操作系统？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "客户端支持 macOS、Linux 和 Windows 10 1803+（自带 OpenSSH）。目标服务器需要是 Linux 系统，并具备 systemd、curl，以及在需要时使用 Nginx。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "OpenDeploy 是否只支持 Go 项目？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "OpenDeploy 适用于任何能编译为单一二进制文件的项目，包括 Go、Rust 和 Deno。对于 Go 项目，OpenDeploy 会自动注入 GOOS=linux GOARCH=amd64 CGO_ENABLED=0 环境变量，build 命令中无需手写。其他语言需要自行在 build 命令中处理交叉编译。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "如何部署两个或多个服务？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "在 deploy.yaml 的 services 列表中声明多个服务即可。每个服务有独立的 name、build、port 和 health_path，但所有服务共用同一个 deploy_dir 部署目录。OpenDeploy 会逐个构建、逐个托管 systemd 并逐个执行健康检查。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "deploy_dir 为什么要求多个服务共用？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "deploy_dir 是所有服务共享的远端部署目录。OpenDeploy 会将所有服务的构建产物打包上传到该目录，然后逐个执行原子替换。这样设计是为了简化部署流程——只需一次上传即可更新所有服务。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "配置变化后是否一定会重启服务？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "不一定。OpenDeploy 会对比 systemd unit 文件的 hash，只有在配置发生变化时才会更新 unit 文件并执行 daemon-reload + restart。如果配置没有变化，不会执行无意义的重启。使用 --force 参数可以跳过 hash 比对，无条件覆盖并重启。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "OpenDeploy 是否负责 DNS 和 TLS 证书？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "不负责。DNS 解析和 TLS 证书属于根域名级、几乎不变的一次性配置，需要自行手动维护，不在 OpenDeploy 的范围内。OpenDeploy 专注于应用部署本身。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "如果健康检查失败会发生什么？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "OpenDeploy 会对每个服务执行 curl 127.0.0.1:{port}{health_path} 健康检查，3 秒超时，最多重试 15 次。如果所有重试均失败，部署会终止并报告错误，但已替换的二进制文件不会自动回滚。"
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "--force 参数什么时候应该使用？",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "当二进制文件未变化但配置已变化时（例如调整了监听端口），使用 --force 可以跳过 unit hash 比对，无条件覆盖 systemd 配置并执行 daemon-reload + restart。正常部署时无需使用。"
+      }
+    }
+  ]
+}
+</script>
+</head>
+<body>
+
+<header class="site-header">
+  <div class="header-inner">
+    <a href="#top" class="brand" aria-label="OpenDeploy 首页">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M12 2L2 7l10 5 10-5-10-5z" stroke="var(--amber)" />
+        <path d="M2 17l10 5 10-5" stroke="var(--ink-dim)" />
+        <path d="M2 12l10 5 10-5" stroke="var(--ink)" />
+      </svg>
+      open<span>deploy</span>
+    </a>
+    <nav class="top-nav" aria-label="主导航">
+      <a href="#what">是什么</a>
+      <a href="#features">核心能力</a>
+      <a href="#flow">部署流程</a>
+      <a href="#quick-start">快速开始</a>
+      <a href="#config">配置</a>
+      <a href="#faq">FAQ</a>
+      <a href="https://www.npmjs.com/package/open-deployer" target="_blank" rel="noopener">npm</a>
+    </nav>
+  </div>
+</header>
+
+<main id="top">
+<div class="wrap">
+
+  <!-- ===== HERO ===== -->
+  <section class="hero" style="border-top:none;">
+    <div class="kicker">面向单机 / 少量服务器 · 适合 <b>Go / Rust / Deno</b> 单二进制项目</div>
+    <h1>一条命令，<span class="accent">部署整个项目</span></h1>
+    <p class="lede">
+      OpenDeploy 是一个轻量级 Linux 服务自动部署 CLI。它通过 SSH 自动完成构建、打包上传、原子替换、systemd 托管、Nginx 同步和 HTTP 健康检查。无需 Docker，无需编写复杂 CI/CD 脚本，重复部署幂等一致。
+    </p>
+    <div class="hero-actions">
+      <a href="#quick-start" class="btn btn-primary">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+        5 分钟快速开始
+      </a>
+      <a href="https://www.npmjs.com/package/open-deployer" target="_blank" rel="noopener" class="btn btn-ghost">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"/></svg>
+        查看 npm
+      </a>
+    </div>
+
+    <div class="term" role="img" aria-label="OpenDeploy 部署终端演示">
+      <div class="term-bar"><i></i><i></i><i></i></div>
+      <div class="term-body">
+<div class="ln"><span class="prompt">$ </span><span class="cmd">npm i -g open-deployer</span></div>
+<div class="ln"><span class="prompt">$ </span><span class="cmd">opendeploy deploy</span></div>
+<div class="ln"><span class="out">[1/8] 读取 + 校验 deploy.yaml</span></div>
+<div class="ln"><span class="out">      services: uploadbroker:8302  uploadbroker-admin:8303</span></div>
+<div class="ln"><span class="out">[2/8] 本地构建 ... </span><span class="ok">done</span></div>
+<div class="ln"><span class="out">[3/8] 打包上传 → /tmp</span></div>
+<div class="ln"><span class="out">[4/8] 远端解包 → /opt/uploadbroker</span></div>
+<div class="ln"><span class="out">[5/8] 原子替换 binary</span></div>
+<div class="ln"><span class="out">[6/8] systemd unit: uploadbroker</span></div>
+<div class="ln"><span class="out">[7/8] health check /v1/health ... </span><span class="ok">200 OK</span></div>
+<div class="ln"><span class="amb">✓ deploy finished</span></div>
+      </div>
+    </div>
+
+    <div class="badges">
+      <span class="badge">MIT License</span>
+      <span class="badge">Node &gt;= 18</span>
+      <span class="badge">命令: opendeploy</span>
+      <span class="badge">v0.9.0</span>
+    </div>
+  </section>
+
+  <!-- ===== WHAT IS IT ===== -->
+  <section id="what" aria-labelledby="what-title">
+    <h2 id="what-title">OpenDeploy 是什么</h2>
+    <div class="summary-block">
+      <p>
+        OpenDeploy 是一个开源的轻量级 Linux 服务器部署 CLI（命令行工具）。它通过 SSH 将本地构建产物上传到目标服务器，并通过原子替换、systemd 服务管理和 HTTP 健康检查完成自动化部署。
+      </p>
+      <p>
+        它主要面向使用 Go、Rust 或 Deno 构建的单二进制项目，适合需要将服务直接部署到单台或少量 Linux VPS 的开发者。OpenDeploy 不依赖 Docker，不替代完整的容器编排平台，而是提供一条命令完成从构建到上线全流程的能力。
+      </p>
+    </div>
+  </section>
+
+  <!-- ===== USE CASES ===== -->
+  <section aria-labelledby="usecase-title">
+    <h2 id="usecase-title">适用场景</h2>
+    <p class="section-sub">了解 OpenDeploy 适合什么项目、不适合什么场景，有助于判断是否选用。</p>
+    <div class="usecase-grid">
+      <div class="usecase-card do">
+        <h3>✓ 适合以下场景</h3>
+        <ul>
+          <li>需要将 Go / Rust / Deno 服务直接部署到 Linux VPS</li>
+          <li>不希望为小型项目引入 Docker 或复杂 CI/CD 流水线</li>
+          <li>需要同时部署核心服务和后台管理服务</li>
+          <li>希望重复部署时保持幂等（结果一致）</li>
+          <li>需要原子替换，部署过程中服务不中断</li>
+          <li>需要 HTTP 健康检查确认服务可用</li>
+        </ul>
+      </div>
+      <div class="usecase-card dont">
+        <h3>— 不适合以下场景</h3>
+        <ul>
+          <li>需要创建和管理云服务器实例</li>
+          <li>需要配置 DNS 解析或申请 TLS 证书</li>
+          <li>需要完整的容器编排平台（Kubernetes 等）</li>
+          <li>需要蓝绿部署或灰度发布等高级发布策略</li>
+          <li>项目无法编译为单一二进制文件</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== FEATURES ===== -->
+  <section id="features" aria-labelledby="features-title">
+    <h2 id="features-title">核心能力</h2>
+    <p class="section-sub">OpenDeploy 将部署流程中的关键环节自动化，每个环节都可以独立引用和理解。</p>
+    <div class="feature-grid">
+      <div class="feature-item">
+        <div class="ficon">01</div>
+        <h3>自动构建</h3>
+        <p>逐个服务执行 build 命令，Go 项目自动注入 GOOS=linux GOARCH=amd64 CGO_ENABLED=0</p>
+      </div>
+      <div class="feature-item">
+        <div class="ficon">02</div>
+        <h3>SSH / tar 上传</h3>
+        <p>将 deploy/ 目录 tar 打包，通过 scp 上传到远端 /tmp，无需额外传输工具</p>
+      </div>
+      <div class="feature-item">
+        <div class="ficon">03</div>
+        <h3>原子替换</h3>
+        <p>使用同文件系统 rename 替换二进制文件，替换过程中服务不中断</p>
+      </div>
+      <div class="feature-item">
+        <div class="ficon">04</div>
+        <h3>systemd 托管</h3>
+        <p>多服务逐个生成 unit 文件，hash 比对后按需更新并 daemon-reload + restart</p>
+      </div>
+      <div class="feature-item">
+        <div class="ficon">05</div>
+        <h3>Nginx 同步</h3>
+        <p>项目自带 nginx.conf 时自动备份、替换、测试、reload，失败自动回滚</p>
+      </div>
+      <div class="feature-item">
+        <div class="ficon">06</div>
+        <h3>HTTP 健康检查</h3>
+        <p>curl 127.0.0.1:{port}{health_path}，3 秒超时，15 次重试确认服务可用</p>
+      </div>
+      <div class="feature-item">
+        <div class="ficon">07</div>
+        <h3>幂等执行</h3>
+        <p>重复部署结果一致，配置未变化时不执行无意义的 reload 或 restart</p>
+      </div>
+      <div class="feature-item">
+        <div class="ficon">08</div>
+        <h3>多服务部署</h3>
+        <p>支持同一项目多个二进制服务（核心 + 后台），共用部署目录，各自独立托管</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== DEPLOYMENT FLOW ===== -->
+  <section id="flow" aria-labelledby="flow-title">
+    <h2 id="flow-title">部署流程</h2>
+    <p class="section-sub">OpenDeploy 按以下 8 步顺序执行部署，幂等设计保证重复运行结果一致。</p>
+    <div class="steps">
+      <div class="step"><div class="n">01</div><div class="t"><b>校验声明</b><small>读取 deploy.yaml，多服务逐项校验 + 服务名重查 + deploy_dir 必填</small></div></div>
+      <div class="step"><div class="n">02</div><div class="t"><b>本地构建</b><small>逐个服务构建，逐个确认 deploy/{name}.new；失败即终止</small></div></div>
+      <div class="step"><div class="n">03</div><div class="t"><b>打包上传</b><small>tar 打包 deploy/ 目录，scp 上传到远端 /tmp</small></div></div>
+      <div class="step"><div class="n">04</div><div class="t"><b>远端解包</b><small>所有服务共享 deploy_dir，解压一次并执行 deploy.sh</small></div></div>
+      <div class="step"><div class="n">05</div><div class="t"><b>原子替换</b><small>每个服务同文件系统 rename，替换过程中服务不中断</small></div></div>
+      <div class="step"><div class="n">06</div><div class="t"><b>systemd 托管</b><small>多服务逐个生成 unit；hash 比对，变更才更新 + daemon-reload，然后 restart。deploy --force 时无条件覆盖 + daemon-reload + restart</small></div></div>
+      <div class="step"><div class="n">07</div><div class="t"><b>健康检查</b><small>每个服务 curl 127.0.0.1:{port}{health_path}，3s 超时 · 15 次重试</small></div></div>
+      <div class="step"><div class="n">08</div><div class="t"><b>Nginx 安全生效</b><small>存在 nginx.conf 才执行：备份 → 替换 → nginx -t → reload，失败自动回滚</small></div></div>
+    </div>
+  </section>
+
+  <!-- ===== QUICK START ===== -->
+  <section id="quick-start" aria-labelledby="quick-title">
+    <h2 id="quick-title">5 分钟快速开始</h2>
+    <p class="section-sub">三步完成首次部署：安装、初始化、部署。</p>
+    <pre class="code"><span class="c1"># 1. 全局安装</span>
+<span class="key">$ </span><span class="val">npm i -g open-deployer</span>
+
+<span class="c1"># 2. 在项目根目录初始化（生成 deploy.yaml 和 nginx.conf 模板）</span>
+<span class="key">$ </span><span class="val">opendeploy init</span>
+
+<span class="c1"># 3. 校验部署声明与前置环境</span>
+<span class="key">$ </span><span class="val">opendeploy check</span>
+
+<span class="c1"># 4. 执行部署</span>
+<span class="key">$ </span><span class="val">opendeploy deploy</span></pre>
+    <p class="note">建议将 <code>deploy/</code> 目录加入 <code>.gitignore</code>，避免将部署配置和构建产物提交到版本控制。</p>
+  </section>
+
+  <!-- ===== CONFIG ===== -->
+  <section id="config" aria-labelledby="config-title">
+    <h2 id="config-title">deploy.yaml 配置参考</h2>
+    <p class="section-sub">项目根目录下 <code class="mono">deploy/deploy.yaml</code> 声明部署需求。以下是完整示例：</p>
+    <pre class="code"><span class="c1"># deploy/deploy.yaml</span>
+<span class="key">ssh</span>: <span class="val">wutuo</span>               <span class="c1"># ~/.ssh/config 主机别名（建议免密→部署全自动；密钥带口令/密码认证则部署时交互输入）</span>
+<span class="key">deploy_dir</span>: <span class="val">/opt/uploadbroker</span>   <span class="c1"># 必填：所有服务共享的远端部署目录</span>
+<span class="key">services</span>:              <span class="c1"># 多服务标准结构；单服务项目写一项即可</span>
+  <span class="key">- name</span>: <span class="val">uploadbroker</span>    <span class="c1"># 服务唯一标识，派生二进制名、systemd/nginx 配置名</span>
+<span class="key">    build</span>: <span class="val">go build -ldflags "-s -w" -o deploy/uploadbroker.new ./cmd/server</span>
+<span class="key">    port</span>: <span class="val">8302</span>              <span class="c1"># 服务监听端口，仅用于本机 health check</span>
+<span class="key">    health_path</span>: <span class="val">/v1/health</span>  <span class="c1"># 状态检查端点，固定 3s 超时</span>
+    <span class="c1"># args: --config ./app.toml  # 可选：传给二进制的原始 argv</span>
+  <span class="key">- name</span>: <span class="val">uploadbroker-admin</span>    <span class="c1"># 第二个服务（核心 + 后台）</span>
+<span class="key">    build</span>: <span class="val">go build -ldflags "-s -w" -o deploy/uploadbroker-admin.new ./cmd/admin</span>
+<span class="key">    port</span>: <span class="val">8303</span>
+<span class="key">    health_path</span>: <span class="val">/v1/health</span></pre>
+
+    <h3 style="font-family:var(--mono);font-size:15px;font-weight:700;margin:28px 0 16px;">配置字段说明</h3>
+    <div class="config-table">
+      <div class="config-row"><code>ssh</code><div class="desc">SSH 主机别名，读取 ~/.ssh/config<small>建议配置免密登录以实现全自动部署</small></div></div>
+      <div class="config-row"><code>deploy_dir</code><div class="desc">远端部署目录<small>所有服务共享，必填</small></div></div>
+      <div class="config-row"><code>services</code><div class="desc">服务列表<small>支持单服务或多服务（核心 + 后台）</small></div></div>
+      <div class="config-row"><code>name</code><div class="desc">服务唯一标识<small>派生二进制名、systemd unit 名和 nginx 配置名</small></div></div>
+      <div class="config-row"><code>build</code><div class="desc">构建命令<small>Go 项目自动注入 GOOS/GOARCH/CGO_ENABLED</small></div></div>
+      <div class="config-row"><code>port</code><div class="desc">服务监听端口<small>仅用于本机 health check</small></div></div>
+      <div class="config-row"><code>health_path</code><div class="desc">健康检查端点<small>固定 3s 超时</small></div></div>
+      <div class="config-row"><code>args</code><div class="desc">传给二进制的原始 argv<small>可选</small></div></div>
+    </div>
+    <p class="note">对 Go 项目，OpenDeploy 会自动注入 <code>GOOS=linux GOARCH=amd64 CGO_ENABLED=0</code>，build 命令里无需手写。多个服务共用一个 <code>deploy_dir</code>，各自独立托管 systemd 与 health check。</p>
+  </section>
+
+  <!-- ===== COMMANDS ===== -->
+  <section aria-labelledby="cmd-title">
+    <h2 id="cmd-title">命令参考</h2>
+    <p class="section-sub">OpenDeploy 提供三个命令，覆盖从初始化到部署的完整流程。</p>
+    <div class="cmdlist">
+      <div class="cmditem"><code>opendeploy init</code><span>生成 deploy.yaml 与 nginx.conf 模板</span></div>
+      <div class="cmditem"><code>opendeploy check</code><span>校验部署声明与前置环境，不实际部署</span></div>
+      <div class="cmditem"><code>opendeploy deploy [-f|--force]</code><span>执行完整的 8 步自动部署；--force 跳过 unit hash 比对，无条件覆盖 + daemon-reload + restart（适用于二进制未变但配置已变，如监听端口调整）</span></div>
+    </div>
+  </section>
+
+  <!-- ===== COMPARISON ===== -->
+  <section aria-labelledby="compare-title">
+    <h2 id="compare-title">与其他方案的区别</h2>
+    <p class="section-sub">OpenDeploy 定位在"手写 SSH 脚本"和"完整 CI/CD 平台"之间，适合单机/少量服务器场景。</p>
+    <table class="compare-table">
+      <thead>
+        <tr>
+          <th>方案</th>
+          <th>无需 Docker</th>
+          <th>原子替换</th>
+          <th>systemd 托管</th>
+          <th>健康检查</th>
+          <th>配置量</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>OpenDeploy</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td class="check">✓</td>
+          <td>一个 yaml</td>
+        </tr>
+        <tr>
+          <td>手写 SSH 脚本</td>
+          <td class="check">✓</td>
+          <td class="cross">—</td>
+          <td class="cross">手动</td>
+          <td class="cross">手动</td>
+          <td>脚本维护</td>
+        </tr>
+        <tr>
+          <td>Docker</td>
+          <td class="cross">需要</td>
+          <td class="check">✓</td>
+          <td class="cross">容器</td>
+          <td class="cross">手动</td>
+          <td>Dockerfile</td>
+        </tr>
+        <tr>
+          <td>GitHub Actions</td>
+          <td class="check">✓</td>
+          <td class="cross">—</td>
+          <td class="cross">手动</td>
+          <td class="cross">手动</td>
+          <td>workflow yaml</td>
+        </tr>
+        <tr>
+          <td>Ansible</td>
+          <td class="check">✓</td>
+          <td class="cross">—</td>
+          <td class="check">✓</td>
+          <td class="cross">手动</td>
+          <td>playbook</td>
+        </tr>
+      </tbody>
+    </table>
+  </section>
+
+  <!-- ===== REQUIREMENTS ===== -->
+  <section aria-labelledby="req-title">
+    <h2 id="req-title">环境要求</h2>
+    <p class="section-sub">OpenDeploy 对客户端和目标服务器有各自的要求。</p>
+    <table class="deps">
+      <thead>
+        <tr><th>命令</th><th>用途</th><th>平台说明</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>ssh / scp</td><td>远程连接与上传</td><td>Win 10 1803+ 自带；macOS / Linux 自带</td></tr>
+        <tr><td>tar</td><td>打包上传（gz）</td><td>Windows 自带 bsdtar</td></tr>
+        <tr><td>go</td><td>执行 build 命令</td><td>仅为示例，实际由 deploy.yaml 决定</td></tr>
+        <tr><td>curl / systemd / nginx</td><td>健康检查 / 服务托管 / 反代</td><td>需在部署目标服务器上就绪</td></tr>
+      </tbody>
+    </table>
+    <p class="note">DNS 解析、TLS 证书等根域名级、几乎不变的一次性配置，需自行手动维护，不在本框架范围内。</p>
+  </section>
+
+  <!-- ===== FAQ ===== -->
+  <section id="faq" aria-labelledby="faq-title">
+    <h2 id="faq-title">常见问题</h2>
+    <p class="section-sub">以下是关于 OpenDeploy 的常见问题及独立、直接的回答。</p>
+    <div class="faq-list">
+      <details class="faq-item">
+        <summary>OpenDeploy 是否需要 Docker？</summary>
+        <div class="faq-answer">
+          <p>不需要。OpenDeploy 通过 SSH 将构建产物直接部署到 Linux 服务器，并使用 systemd 托管服务，不依赖 Docker 或容器技术。服务器仍然需要准备 systemd、curl，以及在需要时使用 Nginx。</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>OpenDeploy 支持哪些操作系统？</summary>
+        <div class="faq-answer">
+          <p>客户端支持 macOS、Linux 和 Windows 10 1803+（自带 OpenSSH）。目标服务器需要是 Linux 系统，并具备 systemd、curl，以及在需要时使用 Nginx。</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>OpenDeploy 是否只支持 Go 项目？</summary>
+        <div class="faq-answer">
+          <p>OpenDeploy 适用于任何能编译为单一二进制文件的项目，包括 Go、Rust 和 Deno。对于 Go 项目，OpenDeploy 会自动注入 <code>GOOS=linux GOARCH=amd64 CGO_ENABLED=0</code> 环境变量，build 命令中无需手写。其他语言需要自行在 build 命令中处理交叉编译。</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>如何部署两个或多个服务？</summary>
+        <div class="faq-answer">
+          <p>在 deploy.yaml 的 services 列表中声明多个服务即可。每个服务有独立的 name、build、port 和 health_path，但所有服务共用同一个 deploy_dir 部署目录。OpenDeploy 会逐个构建、逐个托管 systemd 并逐个执行健康检查。</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>deploy_dir 为什么要求多个服务共用？</summary>
+        <div class="faq-answer">
+          <p>deploy_dir 是所有服务共享的远端部署目录。OpenDeploy 会将所有服务的构建产物打包上传到该目录，然后逐个执行原子替换。这样设计是为了简化部署流程——只需一次上传即可更新所有服务。</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>配置变化后是否一定会重启服务？</summary>
+        <div class="faq-answer">
+          <p>不一定。OpenDeploy 会对比 systemd unit 文件的 hash，只有在配置发生变化时才会更新 unit 文件并执行 daemon-reload + restart。如果配置没有变化，不会执行无意义的重启。使用 <code>--force</code> 参数可以跳过 hash 比对，无条件覆盖并重启。</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>OpenDeploy 是否负责 DNS 和 TLS 证书？</summary>
+        <div class="faq-answer">
+          <p>不负责。DNS 解析和 TLS 证书属于根域名级、几乎不变的一次性配置，需要自行手动维护，不在 OpenDeploy 的范围内。OpenDeploy 专注于应用部署本身。</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>如果健康检查失败会发生什么？</summary>
+        <div class="faq-answer">
+          <p>OpenDeploy 会对每个服务执行 <code>curl 127.0.0.1:{port}{health_path}</code> 健康检查，3 秒超时，最多重试 15 次。如果所有重试均失败，部署会终止并报告错误，但已替换的二进制文件不会自动回滚。</p>
+        </div>
+      </details>
+      <details class="faq-item">
+        <summary>--force 参数什么时候应该使用？</summary>
+        <div class="faq-answer">
+          <p>当二进制文件未变化但配置已变化时（例如调整了监听端口），使用 <code>--force</code> 可以跳过 unit hash 比对，无条件覆盖 systemd 配置并执行 daemon-reload + restart。正常部署时无需使用。</p>
+        </div>
+      </details>
+    </div>
+  </section>
+
+</div>
+</main>
+
+<footer class="site-footer">
+  <div class="wrap foot-row">
+    <div class="fcmd">npm i -g open-deployer</div>
+    <div class="meta">v0.9.0 · MIT · npm: open-deployer</div>
+  </div>
+</footer>
+
+<script>
+  // Theme toggle: auto-detect system preference
+  (function() {
+    var root = document.documentElement;
+    var prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    root.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+  })();
+</script>
+
+<script data-pplx-inline-edit>
+(function () {
+  if (window === window.top) return;
+
+  const allowedParentOrigins = ["https://www.perplexity.ai","https://perplexity.ai","https://testing.perplexity.ai","https://staging.perplexity.ai","https://*.preview.i.perplexity.ai","http://perplexity.localhost","http://localhost:1420","http://127.0.0.1:1420","http://localhost:3000","http://127.0.0.1:3000","http://localhost:5173","http://127.0.0.1:5173"];
+  const MAX_FONT_BYTES = 500 * 1024;
+  const MAX_TOTAL_FONT_BYTES = 2 * 1024 * 1024;
+  let scrollForwarding = false;
+  let scrollRaf = 0;
+  let trustedTopOrigin = null;
+
+  // Allow entries like "https://*.preview.i.perplexity.ai" — the wildcard
+  // matches a single DNS label (no dots), so "https://*.foo" cannot stretch
+  // across multiple labels.
+  function matchesAllowedOrigin(origin) {
+    if (!origin) return false;
+    for (const entry of allowedParentOrigins) {
+      if (!entry.includes("*")) {
+        if (entry === origin) return true;
+        continue;
+      }
+      const pattern = new RegExp(
+        "^" +
+          entry.replace(/[.+?^${}()|[\]\\]/g, "\\$&").replace(/\*/g, "[^.]+") +
+          "$",
+      );
+      if (pattern.test(origin)) return true;
+    }
+    return false;
+  }
+
+  // Trust decision: when the sender is same-origin-visible (event.origin is a
+  // real origin like https://www.perplexity.ai) we trust event.origin directly.
+  // When event.origin is "null" (opaque broker srcdoc), we fall back to the
+  // broker's stamped `parentOrigin` to identify the top window. The fallback
+  // is claim-only — we rely on the browser's native `targetOrigin` enforcement
+  // on the response path (see postToTrustedTop) to ensure replies can't be
+  // delivered to anyone but the actual top window of that claimed origin.
+  function getTrustedParentOrigin(event) {
+    const forwardedParentOrigin =
+      typeof event.data.parentOrigin === "string" ? event.data.parentOrigin : null;
+    const parentOrigin = event.origin === "null" ? forwardedParentOrigin : event.origin;
+    return matchesAllowedOrigin(parentOrigin) ? parentOrigin : null;
+  }
+
+  // All responses go to window.top with targetOrigin = the allowlisted origin.
+  // An attacker that iframes us inside their own null-origin broker can claim
+  // any parentOrigin they like, but the browser will drop the reply whenever
+  // the real top's origin doesn't match — so the screenshot never leaves.
+  function postToTrustedTop(message) {
+    if (!trustedTopOrigin) return;
+    try {
+      window.top.postMessage(message, trustedTopOrigin);
+    } catch (_error) {}
+  }
+
+  function inlineAll(original, clone) {
+    if (original.nodeType !== 1 || clone.nodeType !== 1) return;
+
+    try {
+      const computedStyle = getComputedStyle(original);
+      // cssText on a computed style is the serialized declaration in modern
+      // Chromium/Safari — a single read beats enumerating ~400 longhand
+      // properties. Firefox returns "" here, so we fall back on empty.
+      const serialized = computedStyle.cssText;
+      if (serialized) {
+        clone.style.cssText = serialized;
+      } else {
+        const parts = new Array(computedStyle.length);
+        for (let index = 0; index < computedStyle.length; index += 1) {
+          const property = computedStyle[index];
+          parts[index] = `${property}:${computedStyle.getPropertyValue(property)};`;
+        }
+        clone.style.cssText = parts.join("");
+      }
+    } catch (_error) {}
+
+    const originalChildren = original.children;
+    const clonedChildren = clone.children;
+    for (
+      let index = 0;
+      index < originalChildren.length && index < clonedChildren.length;
+      index += 1
+    ) {
+      inlineAll(originalChildren[index], clonedChildren[index]);
+    }
+  }
+
+  function extractFontUrl(srcValue) {
+    const matches = [
+      ...srcValue.matchAll(
+        /url\(["']?([^"')]+)["']?\)(?:\s*format\(["']?([^"')]+)["']?\))?/gi,
+      ),
+    ];
+    if (matches.length === 0) return null;
+    const woff2 = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff2"));
+    if (woff2) return woff2[1];
+    const woff = matches.find((m) => m[2] && m[2].toLowerCase().includes("woff"));
+    if (woff) return woff[1];
+    return matches[0][1];
+  }
+
+  // Cache resolved font URL -> data URI across captures. Fonts on a page
+  // essentially never change, and a batch run emits multiple captures back to
+  // back — without this we'd refetch + re-base64 every time.
+  const fontDataUriCache = new Map();
+  const SRC_DECLARATION_RE = /src\s*:\s*[^;}]+/i;
+
+  async function fetchAsDataUri(url) {
+    if (fontDataUriCache.has(url)) return fontDataUriCache.get(url);
+    let dataUri = null;
+    try {
+      const response = await fetch(url, { mode: "cors", credentials: "omit" });
+      if (response.ok) {
+        const blob = await response.blob();
+        if (blob.size <= MAX_FONT_BYTES) {
+          dataUri = await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onloadend = () =>
+              resolve(typeof reader.result === "string" ? reader.result : null);
+            reader.onerror = () => resolve(null);
+            reader.readAsDataURL(blob);
+          });
+        }
+      }
+    } catch (_error) {
+      dataUri = null;
+    }
+    fontDataUriCache.set(url, dataUri);
+    return dataUri;
+  }
+
+  function collectFontFaceRuleTexts() {
+    const rules = [];
+    for (const sheet of document.styleSheets) {
+      let cssRules;
+      try {
+        cssRules = sheet.cssRules;
+      } catch (_error) {
+        continue;
+      }
+      if (!cssRules) continue;
+      for (const rule of cssRules) {
+        const cssText = rule.cssText || "";
+        if (cssText.startsWith("@font-face")) rules.push(cssText);
+      }
+    }
+    return rules;
+  }
+
+  async function buildInlinedFontCss() {
+    const ruleTexts = collectFontFaceRuleTexts();
+    if (ruleTexts.length === 0) return null;
+
+    const resolved = ruleTexts.map((cssText) => {
+      if (!SRC_DECLARATION_RE.test(cssText)) return null;
+      const srcMatch = cssText.match(/src\s*:\s*([^;}]+)[;}]/i);
+      if (!srcMatch) return null;
+      const url = extractFontUrl(srcMatch[1]);
+      if (!url) return null;
+      try {
+        return { cssText, url: new URL(url, document.baseURI).href };
+      } catch (_error) {
+        return null;
+      }
+    });
+
+    const dataUris = await Promise.all(
+      resolved.map((entry) => (entry ? fetchAsDataUri(entry.url) : Promise.resolve(null))),
+    );
+
+    const inlined = [];
+    let totalBytes = 0;
+    for (let index = 0; index < resolved.length; index += 1) {
+      const entry = resolved[index];
+      const dataUri = dataUris[index];
+      if (!entry || !dataUri) continue;
+      const approxBytes = dataUri.length * 0.75;
+      if (totalBytes + approxBytes > MAX_TOTAL_FONT_BYTES) break;
+      totalBytes += approxBytes;
+      inlined.push(entry.cssText.replace(SRC_DECLARATION_RE, `src: url("${dataUri}")`));
+    }
+    return inlined.length > 0 ? inlined.join("\n") : null;
+  }
+
+  function stripExternal(clone) {
+    const images = clone.querySelectorAll("img");
+    for (let index = 0; index < images.length; index += 1) {
+      const src = images[index].getAttribute("src");
+      if (src && !src.startsWith("data:")) images[index].removeAttribute("src");
+    }
+
+    const elements = clone.querySelectorAll("*");
+    for (let index = 0; index < elements.length; index += 1) {
+      const style = elements[index].style.cssText;
+      if (style && style.includes("url(")) {
+        elements[index].style.cssText = style.replace(
+          /url\(["']?(?!data:)[^)"']*["']?\)/gi,
+          "none",
+        );
+      }
+    }
+  }
+
+  function emitScroll() {
+    scrollRaf = 0;
+    if (!scrollForwarding) return;
+    postToTrustedTop({
+      type: "INLINE_EDIT_SCROLL",
+      scrollX: window.scrollX,
+      scrollY: window.scrollY,
+    });
+  }
+
+  window.addEventListener(
+    "scroll",
+    function () {
+      if (!scrollForwarding || scrollRaf) return;
+      scrollRaf = requestAnimationFrame(emitScroll);
+    },
+    { passive: true, capture: true },
+  );
+
+  async function handleCaptureRequest(event) {
+    const requestId = event.data.requestId;
+    const scrollX = window.scrollX;
+    const scrollY = window.scrollY;
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+
+    function postResult(dataUrl) {
+      postToTrustedTop({
+        type: "INLINE_EDIT_SCREENSHOT_RESULT",
+        requestId,
+        dataUrl,
+        scrollX,
+        scrollY,
+      });
+    }
+
+    try {
+      // Wait for any pending web fonts to resolve so both inline metrics and
+      // the @font-face inlining below see the same loaded faces.
+      if (document.fonts && document.fonts.ready) {
+        try {
+          await document.fonts.ready;
+        } catch (_error) {}
+      }
+
+      const clone = document.documentElement.cloneNode(true);
+      inlineAll(document.documentElement, clone);
+
+      const removedNodes = clone.querySelectorAll("script,link[rel=\"stylesheet\"],style");
+      for (let index = 0; index < removedNodes.length; index += 1) {
+        removedNodes[index].remove();
+      }
+
+      stripExternal(clone);
+
+      // Re-embed web fonts as data-URI @font-face rules so the SVG rasterizer
+      // can resolve them — external font URLs aren't fetched during
+      // foreignObject rendering, which would otherwise force a fallback face
+      // and change text metrics.
+      const inlinedFontCss = await buildInlinedFontCss();
+      if (inlinedFontCss) {
+        const styleEl = document.createElement("style");
+        styleEl.textContent = inlinedFontCss;
+        const head = clone.querySelector("head");
+        if (head) head.appendChild(styleEl);
+        else clone.insertBefore(styleEl, clone.firstChild);
+      }
+
+      const html = new XMLSerializer().serializeToString(clone);
+      const svg =
+        `<svg xmlns="http://www.w3.org/2000/svg" width="${width}" height="${height}">` +
+        '<foreignObject width="100%" height="100%">' +
+        `<div xmlns="http://www.w3.org/1999/xhtml" style="width:${width}px;height:${height}px;overflow:hidden">` +
+        `<div style="position:relative;left:-${scrollX}px;top:-${scrollY}px">` +
+        html +
+        "</div></div></foreignObject></svg>";
+      const svgUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+      const image = new Image();
+      image.onload = function () {
+        const canvas = document.createElement("canvas");
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext("2d").drawImage(image, 0, 0);
+        postResult(canvas.toDataURL("image/png"));
+      };
+      image.onerror = function () {
+        postResult(null);
+      };
+      image.src = svgUrl;
+    } catch (_error) {
+      postResult(null);
+    }
+  }
+
+  window.addEventListener("message", function (event) {
+    if (!event.data) return;
+    // Only accept messages from the direct parent frame. Blocks sibling /
+    // unrelated-window postMessage senders that could otherwise reach us.
+    if (event.source !== window.parent) return;
+
+    const trustedParentOrigin = getTrustedParentOrigin(event);
+    if (!trustedParentOrigin) return;
+    trustedTopOrigin = trustedParentOrigin;
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_START") {
+      scrollForwarding = true;
+      emitScroll();
+      return;
+    }
+
+    if (event.data.type === "INLINE_EDIT_SCROLL_STOP") {
+      scrollForwarding = false;
+      if (scrollRaf) cancelAnimationFrame(scrollRaf);
+      scrollRaf = 0;
+      return;
+    }
+
+    if (event.data.type !== "INLINE_EDIT_CAPTURE_REQUEST") return;
+
+    handleCaptureRequest(event);
+  });
+})();
+
+
+</script></body>
+</html>
